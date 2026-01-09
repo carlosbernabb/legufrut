@@ -62,6 +62,11 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
               isEqualTo: _model.selectedDriver,
             ),
       );
+      _model.driverPoints = _model.queryAction1!
+          .map((e) => e.location)
+          .withoutNulls
+          .toList();
+      safeSetState(() {});
     });
 
     _model.tabBarController = TabController(
@@ -1134,7 +1139,26 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                                                     marker,
                                                                   ),
                                                                 )
-                                                                .toList(),
+                                                                .toList()
+                                                              ..add(FlutterFlowMarker(
+                                                                'warehouse-v3',
+                                                                LatLng(21.07364,
+                                                                    -101.68435),
+                                                                () async {
+                                                                  ScaffoldMessenger
+                                                                          .of(context)
+                                                                      .showSnackBar(
+                                                                    SnackBar(
+                                                                      content: Text(
+                                                                          'Central de Abastos de León'),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                                BitmapDescriptor
+                                                                    .defaultMarkerWithHue(
+                                                                        BitmapDescriptor
+                                                                            .hueCyan),
+                                                              )),
                                                         markerColor:
                                                             GoogleMarkerColor
                                                                 .violet,
@@ -2191,7 +2215,26 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                                                     marker,
                                                                   ),
                                                                 )
-                                                                .toList(),
+                                                                .toList()
+                                                              ..add(FlutterFlowMarker(
+                                                                'warehouse-v3',
+                                                                LatLng(21.07364,
+                                                                    -101.68435),
+                                                                () async {
+                                                                  ScaffoldMessenger
+                                                                          .of(context)
+                                                                      .showSnackBar(
+                                                                    SnackBar(
+                                                                      content: Text(
+                                                                          'Central de Abastos de León'),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                                BitmapDescriptor
+                                                                    .defaultMarkerWithHue(
+                                                                        BitmapDescriptor
+                                                                            .hueCyan),
+                                                              )),
                                                         markerColor:
                                                             GoogleMarkerColor
                                                                 .violet,
@@ -3195,8 +3238,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                                                 .googleMapsCenter3 ??=
                                                             LatLng(21.07364,
                                                                 -101.68435),
-                                                        markers:
-                                                            _model.driverPoints
+                                                        markers: _model.driverPoints
                                                                 .map(
                                                                   (marker) =>
                                                                       FlutterFlowMarker(
@@ -3205,7 +3247,26 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                                                     marker,
                                                                   ),
                                                                 )
-                                                                .toList(),
+                                                                .toList()
+                                                              ..add(FlutterFlowMarker(
+                                                                'warehouse-v3',
+                                                                LatLng(21.07364,
+                                                                    -101.68435),
+                                                                () async {
+                                                                  ScaffoldMessenger
+                                                                          .of(context)
+                                                                      .showSnackBar(
+                                                                    SnackBar(
+                                                                      content: Text(
+                                                                          'Central de Abastos de León'),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                                BitmapDescriptor
+                                                                    .defaultMarkerWithHue(
+                                                                        BitmapDescriptor
+                                                                            .hueCyan),
+                                                              )),
                                                         markerColor:
                                                             GoogleMarkerColor
                                                                 .violet,
