@@ -17,6 +17,7 @@ import 'package:provider/provider.dart';
 import 'admincreateproduct_model.dart';
 export 'admincreateproduct_model.dart';
 
+import 'package:flutter/scheduler.dart';
 /// Create an Admin Product Manager Page for the Legufrut Ultra app.
 ///
 /// The admin can add, view, and manage products.
@@ -55,6 +56,13 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => AdmincreateproductModel());
+
+    // Security check: Redirect if not admin
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!valueOrDefault<bool>(currentUserDocument?.isadmin, false)) {
+        context.pushNamed(HomePageWidget.routeName);
+      }
+    });
 
     _model.textController1 ??= TextEditingController();
     _model.textFieldFocusNode1 ??= FocusNode();

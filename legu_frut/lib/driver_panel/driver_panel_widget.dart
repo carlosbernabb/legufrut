@@ -300,7 +300,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(0.0, 4.0, 0.0, 0.0),
                                               child: Text(
-                                                'admin@gmail.com',
+                                                currentUserEmail,
                                                 style: FlutterFlowTheme.of(
                                                         context)
                                                     .labelSmall
