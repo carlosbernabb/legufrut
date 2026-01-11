@@ -15,6 +15,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -99,6 +100,36 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
           !anim.applyInitialState),
       this,
     );
+  }
+
+  void launchGoogleMapsRoute(List<LatLng> waypoints) async {
+    if (waypoints.isEmpty) return;
+
+    final origin = '21.07364,-101.68435'; // Central de Abastos
+    final destination =
+        '${waypoints.last.latitude},${waypoints.last.longitude}';
+    
+    // Construct waypoints string (excluding the last one which is destination)
+    String waypointsString = '';
+    if (waypoints.length > 1) {
+      waypointsString = waypoints
+          .sublist(0, waypoints.length - 1)
+          .map((p) => '${p.latitude},${p.longitude}')
+          .join('|');
+    }
+
+    final urlString =
+        'https://www.google.com/maps/dir/?api=1&origin=$origin&destination=$destination&waypoints=$waypointsString&travelmode=driving';
+
+    if (await canLaunchUrl(Uri.parse(urlString))) {
+      await launchUrl(Uri.parse(urlString));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudo abrir Google Maps.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -1076,6 +1107,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
+
                                             Row(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
@@ -1182,6 +1214,42 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                                   ),
                                                 ),
                                               ],
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsetsDirectional.fromSTEB(15.0, 10.0, 15.0, 0.0),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: [
+                                                  FFButtonWidget(
+                                                    onPressed: () async {
+                                                      launchGoogleMapsRoute(_model.driverPoints);
+                                                    },
+                                                    text: 'Traza Ruta',
+                                                    icon: Icon(
+                                                      Icons.map_sharp,
+                                                      size: 15.0,
+                                                    ),
+                                                    options: FFButtonOptions(
+                                                      height: 40.0,
+                                                      padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                                                      iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                                      color: FlutterFlowTheme.of(context).primary,
+                                                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                            font: GoogleFonts.inter(
+                                                              color: Colors.white,
+                                                            ),
+                                                          ),
+                                                      elevation: 3.0,
+                                                      borderSide: BorderSide(
+                                                        color: Colors.transparent,
+                                                        width: 1.0,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(8.0),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                             Padding(
                                               padding: EdgeInsetsDirectional
@@ -2152,6 +2220,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
+
                                             Row(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
@@ -2258,6 +2327,42 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                                   ),
                                                 ),
                                               ],
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsetsDirectional.fromSTEB(15.0, 10.0, 15.0, 0.0),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: [
+                                                  FFButtonWidget(
+                                                    onPressed: () async {
+                                                      launchGoogleMapsRoute(_model.driverPoints);
+                                                    },
+                                                    text: 'Traza Ruta',
+                                                    icon: Icon(
+                                                      Icons.map_sharp,
+                                                      size: 15.0,
+                                                    ),
+                                                    options: FFButtonOptions(
+                                                      height: 40.0,
+                                                      padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                                                      iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                                      color: FlutterFlowTheme.of(context).primary,
+                                                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                            font: GoogleFonts.inter(
+                                                              color: Colors.white,
+                                                            ),
+                                                          ),
+                                                      elevation: 3.0,
+                                                      borderSide: BorderSide(
+                                                        color: Colors.transparent,
+                                                        width: 1.0,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(8.0),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                             Padding(
                                               padding: EdgeInsetsDirectional
@@ -3185,6 +3290,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
+
                                             Row(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
@@ -3290,6 +3396,42 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                                                   ),
                                                 ),
                                               ],
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsetsDirectional.fromSTEB(15.0, 10.0, 15.0, 0.0),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: [
+                                                  FFButtonWidget(
+                                                    onPressed: () async {
+                                                      launchGoogleMapsRoute(_model.driverPoints);
+                                                    },
+                                                    text: 'Traza Ruta',
+                                                    icon: Icon(
+                                                      Icons.map_sharp,
+                                                      size: 15.0,
+                                                    ),
+                                                    options: FFButtonOptions(
+                                                      height: 40.0,
+                                                      padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                                                      iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                                      color: FlutterFlowTheme.of(context).primary,
+                                                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                            font: GoogleFonts.inter(
+                                                              color: Colors.white,
+                                                            ),
+                                                          ),
+                                                      elevation: 3.0,
+                                                      borderSide: BorderSide(
+                                                        color: Colors.transparent,
+                                                        width: 1.0,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(8.0),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                             Padding(
                                               padding: EdgeInsetsDirectional

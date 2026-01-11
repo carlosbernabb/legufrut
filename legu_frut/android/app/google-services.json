@@ -53,7 +53,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:951790695087:android:de318aaa5c49b0984a9a5a",
         "android_client_info": {
-          "package_name": "com.mycompany.legufrutultra"
+          "package_name": "com.legufrut.app"
         }
       },
       "oauth_client": [
@@ -61,7 +61,7 @@
           "client_id": "951790695087-90a0mqdilvtdchf09f0v7sb10g37vlnn.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.mycompany.legufrutultra",
+            "package_name": "com.legufrut.app",
             "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
           }
         },

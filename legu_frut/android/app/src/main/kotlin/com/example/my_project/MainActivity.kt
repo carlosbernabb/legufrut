@@ -1,4 +1,4 @@
-package com.mycompany.legufrutultra
+package com.legufrut.app
 
 import io.flutter.embedding.android.FlutterActivity
 
