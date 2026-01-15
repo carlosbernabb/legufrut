@@ -173,7 +173,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
             delay: 0.0.ms,
             duration: 820.0.ms,
             begin: Offset(0.436, -0.175),
-            end: Offset(0.436, 0.349),
+            end: Offset(0, 0),
           ),
         ],
       ),
@@ -902,7 +902,19 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Row(
+                                            Builder(
+                                              builder: (context) {
+                                                if (FFAppState().buscador &&
+                                                    _model.simpleSearchResults
+                                                        .where((e) =>
+                                                            e.category ==
+                                                            'Frutas')
+                                                        .isEmpty) {
+                                                  return SizedBox.shrink();
+                                                }
+                                                return Column(
+                                                  children: [
+                                                    Row(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
                                                 Padding(
@@ -973,6 +985,12 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                                     .simpleSearchResults
                                                                     .map((e) =>
                                                                         e)
+                                                                    .map((e) =>
+                                                                        e)
+                                                                    .toList()
+                                                                    .where((e) =>
+                                                                        e.category ==
+                                                                        'Frutas')
                                                                     .toList();
 
                                                             return ListView
@@ -1102,7 +1120,23 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                 ),
                                               ),
                                             ),
-                                            Row(
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                            Builder(
+                                              builder: (context) {
+                                                if (FFAppState().buscador &&
+                                                    _model.simpleSearchResults
+                                                        .where((e) =>
+                                                            e.category ==
+                                                            'Verduras')
+                                                        .isEmpty) {
+                                                  return SizedBox.shrink();
+                                                }
+                                                return Column(
+                                                  children: [
+                                                    Row(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
                                                 Padding(
@@ -1237,6 +1271,12 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                                     .simpleSearchResults
                                                                     .map((e) =>
                                                                         e)
+                                                                    .map((e) =>
+                                                                        e)
+                                                                    .toList()
+                                                                    .where((e) =>
+                                                                        e.category ==
+                                                                        'Verduras')
                                                                     .toList();
 
                                                             return ListView
@@ -1298,7 +1338,23 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                 ),
                                               ),
                                             ),
-                                            Padding(
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                            Builder(
+                                              builder: (context) {
+                                                if (FFAppState().buscador &&
+                                                    _model.simpleSearchResults
+                                                        .where((e) =>
+                                                            e.category ==
+                                                            'Abarrotes')
+                                                        .isEmpty) {
+                                                  return SizedBox.shrink();
+                                                }
+                                                return Column(
+                                                  children: [
+                                                    Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 10.0, 0.0, 0.0),
@@ -1432,6 +1488,10 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                               _model
                                                                   .simpleSearchResults
                                                                   .map((e) => e)
+                                                                  .toList()
+                                                                  .where((e) =>
+                                                                      e.category ==
+                                                                      'Abarrotes')
                                                                   .toList();
 
                                                           return ListView
@@ -1491,7 +1551,23 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                 ),
                                               ),
                                             ),
-                                            Padding(
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                            Builder(
+                                              builder: (context) {
+                                                if (FFAppState().buscador &&
+                                                    _model.simpleSearchResults
+                                                        .where((e) =>
+                                                            e.category ==
+                                                            'Chiles–Semillas–Plantas')
+                                                        .isEmpty) {
+                                                  return SizedBox.shrink();
+                                                }
+                                                return Column(
+                                                  children: [
+                                                    Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 10.0, 0.0, 0.0),
@@ -1628,6 +1704,10 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                               _model
                                                                   .simpleSearchResults
                                                                   .map((e) => e)
+                                                                  .toList()
+                                                                  .where((e) =>
+                                                                      e.category ==
+                                                                      'Chiles–Semillas–Plantas')
                                                                   .toList();
 
                                                           return ListView
@@ -1686,6 +1766,10 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                   ],
                                                 ),
                                               ),
+                                            ),
+                                                  ],
+                                                );
+                                              },
                                             ),
                                             Padding(
                                               padding: EdgeInsetsDirectional
