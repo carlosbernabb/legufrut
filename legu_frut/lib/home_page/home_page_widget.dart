@@ -369,6 +369,74 @@ class _HomePageWidgetState extends State<HomePageWidget>
           child: Scaffold(
             key: scaffoldKey,
             backgroundColor: Colors.white,
+            drawer: Drawer(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  UserAccountsDrawerHeader(
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).primary,
+                    ),
+                    accountName: Text(currentUserDisplayName, style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                    accountEmail: Text(currentUserEmail, style: GoogleFonts.inter()),
+                    currentAccountPicture: currentUserPhoto != ''
+                        ? CircleAvatar(
+                            backgroundImage: NetworkImage(currentUserPhoto),
+                          )
+                        : CircleAvatar(
+                            backgroundColor: Colors.white,
+                            child: Text(
+                              currentUserDisplayName.isNotEmpty ? currentUserDisplayName[0] : 'U',
+                              style: TextStyle(fontSize: 24.0, color: FlutterFlowTheme.of(context).primary),
+                            ),
+                          ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.logout),
+                    title: Text('Salir de la cuenta', style: GoogleFonts.inter()),
+                    onTap: () async {
+                      GoRouter.of(context).prepareAuthEvent();
+                      await authManager.signOut();
+                      GoRouter.of(context).clearRedirectLocation();
+
+                      context.goNamedAuth(LogginWidget.routeName, context.mounted);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.delete_forever, color: Color(0xFFF73034)),
+                    title: Text('Eliminar cuenta', style: GoogleFonts.inter(color: Color(0xFFF73034))),
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (alertDialogContext) {
+                          return AlertDialog(
+                             title: Text('Eliminar cuenta'),
+                             content: Text('¿Estas seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer.'),
+                             actions: [
+                               TextButton(
+                                 onPressed: () => Navigator.pop(alertDialogContext, false),
+                                 child: Text('Cancelar'),
+                               ),
+                               TextButton(
+                                 onPressed: () => Navigator.pop(alertDialogContext, true),
+                                 child: Text('Confirmar', style: TextStyle(color: Colors.red)),
+                               ),
+                             ],
+                          );
+                        },
+                      );
+                      
+                      if (confirm == true) {
+                        await authManager.deleteUser(context);
+                         GoRouter.of(context).prepareAuthEvent();
+                         GoRouter.of(context).clearRedirectLocation();
+                         context.goNamedAuth(LogginWidget.routeName, context.mounted);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
             body: SafeArea(
               top: true,
               child: Column(
@@ -670,19 +738,11 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                       15.0, 5.0, 0.0, 0.0),
                                               child: FFButtonWidget(
                                                 onPressed: () async {
-                                                  GoRouter.of(context)
-                                                      .prepareAuthEvent();
-                                                  await authManager.signOut();
-                                                  GoRouter.of(context)
-                                                      .clearRedirectLocation();
-
-                                                  context.goNamedAuth(
-                                                      LogginWidget.routeName,
-                                                      context.mounted);
+                                                  scaffoldKey.currentState!.openDrawer();
                                                 },
-                                                text: 'Salir',
+                                                text: 'Cuenta',
                                                 icon: Icon(
-                                                  Icons.person_off,
+                                                  Icons.menu,
                                                   size: 15.0,
                                                 ),
                                                 options: FFButtonOptions(
