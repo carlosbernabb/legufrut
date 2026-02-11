@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_count_controller.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/loggin/loggin_widget.dart';
 import 'dart:math';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -471,6 +472,33 @@ class _UniversalProductCardWidgetState extends State<UniversalProductCardWidget>
                       // ADD TO CART BUTTON
                       FFButtonWidget(
                         onPressed: () async {
+                          // CHECK AUTHENTICATION FIRST
+                          if (!loggedIn) {
+                            // Show message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Inicia sesión para agregar productos al carrito',
+                                  style: FlutterFlowTheme.of(context)
+                                      .headlineMedium
+                                      .override(
+                                        font: GoogleFonts.interTight(),
+                                        color: FlutterFlowTheme.of(context).primary,
+                                        fontSize: 15.0,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                duration: Duration(milliseconds: 3000),
+                                backgroundColor: Color(0xFFFFA726),
+                              ),
+                            );
+                            
+                            // Navigate to login page
+                            await Future.delayed(Duration(milliseconds: 500));
+                            context.pushNamed(LogginWidget.routeName);
+                            return;
+                          }
+
                           // QUERY EXISTING
                           _model.existingItem = await queryCartRecordOnce(
                             queryBuilder: (cartRecord) => cartRecord

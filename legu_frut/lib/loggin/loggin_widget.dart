@@ -1010,6 +1010,100 @@ class _LogginWidgetState extends State<LogginWidget>
                                                               ),
                                                             ),
                                                           ),
+                                                          // SIGN IN WITH APPLE BUTTON
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        0.0,
+                                                                        0.0,
+                                                                        0.0,
+                                                                        16.0),
+                                                            child:
+                                                                FFButtonWidget(
+                                                              onPressed:
+                                                                  () async {
+                                                                GoRouter.of(
+                                                                        context)
+                                                                    .prepareAuthEvent();
+                                                                final user =
+                                                                    await authManager
+                                                                        .signInWithApple(
+                                                                            context);
+                                                                if (user ==
+                                                                    null) {
+                                                                  return;
+                                                                }
+
+                                                                context.goNamedAuth(
+                                                                    HomePageWidget
+                                                                        .routeName,
+                                                                    context
+                                                                        .mounted);
+                                                              },
+                                                              text:
+                                                                  'Sign in with Apple',
+                                                              icon: FaIcon(
+                                                                FontAwesomeIcons
+                                                                    .apple,
+                                                                size: 20.0,
+                                                              ),
+                                                              options:
+                                                                  FFButtonOptions(
+                                                                width: 230.0,
+                                                                height: 44.0,
+                                                                padding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0),
+                                                                iconPadding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0),
+                                                                color: Color(0xFF000000),
+                                                                textStyle: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      font: GoogleFonts
+                                                                          .inter(
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                            .bodyMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                                      color: Colors.white,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontStyle: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .bodyMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                                elevation: 0.0,
+                                                                borderSide:
+                                                                    BorderSide(
+                                                                  color: Color(0xFF000000),
+                                                                  width: 2.0,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            40.0),
+                                                                hoverColor: Color(0xFF333333),
+                                                              ),
+                                                            ),
+                                                          ),
                                                         ],
                                                       ),
                                                     ),

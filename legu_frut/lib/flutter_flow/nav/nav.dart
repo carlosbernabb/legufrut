@@ -44,7 +44,7 @@ class AppStateNotifier extends ChangeNotifier {
   /// Otherwise, this will trigger a refresh and interrupt the action(s).
   bool notifyOnAuthChange = true;
 
-  bool get loading => user == null || showSplashImage;
+  bool get loading => showSplashImage;
   bool get loggedIn => user?.loggedIn ?? false;
   bool get initiallyLoggedIn => initialUser?.loggedIn ?? false;
   bool get shouldRedirect => loggedIn && _redirectLocation != null;
@@ -84,14 +84,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? HomePageWidget() : LogginWidget(),
+      errorBuilder: (context, state) => HomePageWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) =>
-              appStateNotifier.loggedIn ? HomePageWidget() : LogginWidget(),
+          builder: (context, _) => HomePageWidget(),
         ),
         FFRoute(
           name: LogginWidget.routeName,
@@ -111,11 +109,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: CarritoWidget.routeName,
           path: CarritoWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => CarritoWidget(),
         ),
         FFRoute(
           name: ComprahechaWidget.routeName,
           path: ComprahechaWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => ComprahechaWidget(),
         ),
         FFRoute(
@@ -320,15 +320,7 @@ class FFRoute {
                   builder: (context, _) => builder(context, ffParams),
                 )
               : builder(context, ffParams);
-          final child = appStateNotifier.loading
-              ? Container(
-                  color: Colors.white,
-                  child: Image.asset(
-                    'assets/images/Legufrut_img.jpeg',
-                    fit: BoxFit.fitWidth,
-                  ),
-                )
-              : PushNotificationsHandler(child: page);
+          final child = PushNotificationsHandler(child: page);
 
           final transitionInfo = state.transitionInfo;
           return transitionInfo.hasTransition
