@@ -1122,11 +1122,12 @@ class _LogginWidgetState extends State<LogginWidget>
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
                                                   12.0, 0.0, 12.0, 12.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
+                                          child: SingleChildScrollView(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.max,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
                                               Padding(
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(
@@ -2143,6 +2144,7 @@ class _LogginWidgetState extends State<LogginWidget>
                                           ).animateOnPageLoad(animationsMap[
                                               'columnOnPageLoadAnimation2']!),
                                         ),
+                                      ),
                                       ),
                                     ],
                                   ),
