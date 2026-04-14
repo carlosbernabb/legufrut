@@ -514,7 +514,7 @@ class _LogginWidgetState extends State<LogginWidget>
                                                     obscureText: !_model
                                                         .passwordVisibility,
                                                     decoration: InputDecoration(
-                                                      labelText: 'Password',
+                                                      labelText: 'Contraseña',
                                                       labelStyle:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -943,7 +943,7 @@ class _LogginWidgetState extends State<LogginWidget>
                                                                         .mounted);
                                                               },
                                                               text:
-                                                                  'Continue with Google',
+                                                                  'Continuar con Google',
                                                               icon: FaIcon(
                                                                 FontAwesomeIcons
                                                                     .google,
@@ -1042,7 +1042,7 @@ class _LogginWidgetState extends State<LogginWidget>
                                                                         .mounted);
                                                               },
                                                               text:
-                                                                  'Sign in with Apple',
+                                                                  'Continuar con Apple',
                                                               icon: FaIcon(
                                                                 FontAwesomeIcons
                                                                     .apple,
@@ -1484,7 +1484,7 @@ class _LogginWidgetState extends State<LogginWidget>
                                                     obscureText: !_model
                                                         .passwordCreateVisibility,
                                                     decoration: InputDecoration(
-                                                      labelText: 'Password',
+                                                      labelText: 'Contraseña',
                                                       labelStyle:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -2032,7 +2032,7 @@ class _LogginWidgetState extends State<LogginWidget>
                                                                         .mounted);
                                                               },
                                                               text:
-                                                                  'Continue with Google',
+                                                                  'Continuar con Google',
                                                               icon: FaIcon(
                                                                 FontAwesomeIcons
                                                                     .google,

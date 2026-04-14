@@ -63,7 +63,7 @@ class _MyAppState extends State<MyApp> {
   late Stream<BaseAuthUser> userStream;
 
   final authUserSub = authenticatedUserStream.listen((_) {});
-  final fcmTokenSub = fcmTokenUserStream.listen((_) {});
+  final fcmTokenSub = fcmTokenUserStream.listen((_) {}, onError: (_) {});
 
   @override
   void initState() {

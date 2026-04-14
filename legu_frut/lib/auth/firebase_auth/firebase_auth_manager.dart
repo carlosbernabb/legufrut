@@ -326,6 +326,9 @@ class FirebaseAuthManager extends AuthManager
         SnackBar(content: Text(errorMsg)),
       );
       return null;
+    } catch (e) {
+      // Handle cancellation or other non-Firebase errors (e.g., user cancels Apple Sign In)
+      return null;
     }
   }
 }

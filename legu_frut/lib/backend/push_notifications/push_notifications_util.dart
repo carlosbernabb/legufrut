@@ -30,11 +30,12 @@ Stream<UserTokenInfo> getFcmTokenStream(String userPath) =>
                           AuthorizationStatus.authorized
                       ? FirebaseMessaging.instance.getToken()
                       : null,
-                ))
+                ).catchError((_) => null))
         .switchMap((fcmToken) => Stream.value(fcmToken)
             .merge(FirebaseMessaging.instance.onTokenRefresh))
         .where((fcmToken) => fcmToken != null && fcmToken.isNotEmpty)
-        .map((token) => UserTokenInfo(userPath, token!));
+        .map((token) => UserTokenInfo(userPath, token!))
+        .handleError((_) {});
 
 final fcmTokenUserStream = authenticatedUserStream
     .where((user) => user != null)
