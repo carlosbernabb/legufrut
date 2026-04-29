@@ -7,6 +7,50 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:951790695087:android:2b92a9893070bcc54a9a5a",
+        "android_client_info": {
+          "package_name": "com.legufrut.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "951790695087-iviq4pgk5dbi6gi3hvnmskdhqai39oo1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.legufrut.app",
+            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
+          }
+        },
+        {
+          "client_id": "951790695087-6eqskrl0t7hqr1d5gvt719lt2oc8nm26.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDghhZgeXyC0GtAii2iwyjxOIAbM2yaHaw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "951790695087-6eqskrl0t7hqr1d5gvt719lt2oc8nm26.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "951790695087-1o34qeiucgpbhkd8kt165e1bkhaird77.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.legufrut.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:951790695087:android:3372ec2de4f56ab24a9a5a",
         "android_client_info": {
           "package_name": "com.mycompany.legufrut"
@@ -39,10 +83,10 @@
               "client_type": 3
             },
             {
-              "client_id": "951790695087-bqjpg773ehlivuhrm2u3b133353nrpj0.apps.googleusercontent.com",
+              "client_id": "951790695087-1o34qeiucgpbhkd8kt165e1bkhaird77.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.mycompany.legufrut"
+                "bundle_id": "com.legufrut.app"
               }
             }
           ]
@@ -53,7 +97,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:951790695087:android:de318aaa5c49b0984a9a5a",
         "android_client_info": {
-          "package_name": "com.legufrut.app"
+          "package_name": "com.mycompany.legufrutultra"
         }
       },
       "oauth_client": [
@@ -61,7 +105,7 @@
           "client_id": "951790695087-90a0mqdilvtdchf09f0v7sb10g37vlnn.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.legufrut.app",
+            "package_name": "com.mycompany.legufrutultra",
             "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
           }
         },
@@ -83,10 +127,10 @@
               "client_type": 3
             },
             {
-              "client_id": "951790695087-bqjpg773ehlivuhrm2u3b133353nrpj0.apps.googleusercontent.com",
+              "client_id": "951790695087-1o34qeiucgpbhkd8kt165e1bkhaird77.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.mycompany.legufrut"
+                "bundle_id": "com.legufrut.app"
               }
             }
           ]

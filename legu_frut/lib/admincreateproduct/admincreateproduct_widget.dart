@@ -150,7 +150,7 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Product Manager',
+                    'Gestor de Productos',
                     style: FlutterFlowTheme.of(context).headlineMedium.override(
                           font: GoogleFonts.interTight(
                             fontWeight: FontWeight.w600,
@@ -159,7 +159,7 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                 .fontStyle,
                           ),
                           color: Colors.white,
-                          fontSize: 22.0,
+                          fontSize: 20.0,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.w600,
                           fontStyle: FlutterFlowTheme.of(context)
@@ -182,91 +182,84 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          FFButtonWidget(
-                            onPressed: () async {
-                              context.pushNamed(OrdenesAdminWidget.routeName);
-                            },
-                            text: 'Ordenes',
-                            icon: Icon(
-                              Icons.storefront,
-                              size: 15.0,
-                            ),
-                            options: FFButtonOptions(
-                              height: 40.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: Color(0xFF059434),
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
+                      Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 8.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0),
+                                child: FFButtonWidget(
+                                  onPressed: () async {
+                                    context.pushNamed(OrdenesAdminWidget.routeName);
+                                  },
+                                  text: 'Ver Órdenes',
+                                  icon: Icon(
+                                    Icons.storefront_rounded,
+                                    size: 18.0,
                                   ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          FFButtonWidget(
-                            onPressed: () async {
-                              context.pushNamed(RecuadroAlertaWidget.routeName);
-                            },
-                            text: 'Alerta',
-                            icon: Icon(
-                              Icons.message_sharp,
-                              size: 15.0,
-                            ),
-                            options: FFButtonOptions(
-                              height: 40.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: Color(0xFF052287),
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                  options: FFButtonOptions(
+                                    height: 44.0,
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                        12.0, 0.0, 12.0, 0.0),
+                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                        0.0, 0.0, 4.0, 0.0),
+                                    color: Color(0xFF2D5016),
+                                    textStyle: FlutterFlowTheme.of(context)
                                         .titleSmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          color: Colors.white,
+                                          fontSize: 14.0,
+                                          letterSpacing: 0.0,
+                                        ),
+                                    elevation: 2.0,
+                                    borderRadius: BorderRadius.circular(10.0),
                                   ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
+                                child: FFButtonWidget(
+                                  onPressed: () async {
+                                    context.pushNamed(RecuadroAlertaWidget.routeName);
+                                  },
+                                  text: 'Enviar Alerta',
+                                  icon: Icon(
+                                    Icons.campaign_rounded,
+                                    size: 18.0,
+                                  ),
+                                  options: FFButtonOptions(
+                                    height: 44.0,
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                        12.0, 0.0, 12.0, 0.0),
+                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                        0.0, 0.0, 4.0, 0.0),
+                                    color: Color(0xFF052287),
+                                    textStyle: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          color: Colors.white,
+                                          fontSize: 14.0,
+                                          letterSpacing: 0.0,
+                                        ),
+                                    elevation: 2.0,
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       InkWell(
                         splashColor: Colors.transparent,
@@ -894,7 +887,7 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                                 FFAppState().pickedImage,
                                                 width: 200.0,
                                                 height: 200.0,
-                                                fit: BoxFit.fill,
+                                                fit: BoxFit.cover,
                                               ),
                                             ),
                                           ),
@@ -1291,6 +1284,29 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                   ),
                                   FFButtonWidget(
                                     onPressed: () async {
+                                      if (FFAppState().selectedCategory ==
+                                              null ||
+                                          FFAppState().selectedCategory == '') {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Por favor selecciona una categoría',
+                                              style: TextStyle(
+                                                color: FlutterFlowTheme.of(
+                                                        context)
+                                                    .primaryText,
+                                              ),
+                                            ),
+                                            duration:
+                                                Duration(milliseconds: 4000),
+                                            backgroundColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .error,
+                                          ),
+                                        );
+                                        return;
+                                      }
                                       if (FFAppState().seletype == null ||
                                           FFAppState().seletype == '') {
                                         ScaffoldMessenger.of(context)
@@ -1394,7 +1410,7 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Producto Inventorio',
+                            'Inventario de Productos',
                             style: FlutterFlowTheme.of(context)
                                 .titleLarge
                                 .override(
@@ -1714,25 +1730,28 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                                                   .circular(
                                                                       8.0),
                                                         ),
-                                                        child: ClipRRect(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0),
-                                                          child: Image.network(
-                                                            frutasItem
-                                                                .coverImage,
-                                                            width: 200.0,
-                                                            height: 117.3,
-                                                            fit: BoxFit.fill,
-                                                            errorBuilder: (context,
-                                                                    error,
-                                                                    stackTrace) =>
-                                                                Image.asset(
-                                                              'assets/images/error_image.jpg',
+                                                        child: Container(
+                                                          color: Colors.white,
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0),
+                                                            child: Image.network(
+                                                              frutasItem
+                                                                  .coverImage,
                                                               width: 200.0,
-                                                              height: 117.3,
-                                                              fit: BoxFit.fill,
+                                                              height: 160.0,
+                                                              fit: BoxFit.contain,
+                                                              errorBuilder: (context,
+                                                                      error,
+                                                                      stackTrace) =>
+                                                                  Image.asset(
+                                                                'assets/images/error_image.jpg',
+                                                                width: 200.0,
+                                                                height: 160.0,
+                                                                fit: BoxFit.contain,
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
@@ -2380,23 +2399,26 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                                           BorderRadius.circular(
                                                               8.0),
                                                     ),
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8.0),
-                                                      child: Image.network(
-                                                        verdurasItem.coverImage,
-                                                        width: 200.0,
-                                                        height: 117.3,
-                                                        fit: BoxFit.fill,
-                                                        errorBuilder: (context,
-                                                                error,
-                                                                stackTrace) =>
-                                                            Image.asset(
-                                                          'assets/images/error_image.jpg',
+                                                    child: Container(
+                                                      color: Colors.white,
+                                                      child: ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                8.0),
+                                                        child: Image.network(
+                                                          verdurasItem.coverImage,
                                                           width: 200.0,
-                                                          height: 117.3,
-                                                          fit: BoxFit.fill,
+                                                          height: 160.0,
+                                                          fit: BoxFit.contain,
+                                                          errorBuilder: (context,
+                                                                  error,
+                                                                  stackTrace) =>
+                                                              Image.asset(
+                                                            'assets/images/error_image.jpg',
+                                                            width: 200.0,
+                                                            height: 160.0,
+                                                            fit: BoxFit.contain,
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
@@ -3040,24 +3062,27 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                                           BorderRadius.circular(
                                                               8.0),
                                                     ),
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8.0),
-                                                      child: Image.network(
-                                                        abarrotesItem
-                                                            .coverImage,
-                                                        width: 200.0,
-                                                        height: 117.3,
-                                                        fit: BoxFit.fill,
-                                                        errorBuilder: (context,
-                                                                error,
-                                                                stackTrace) =>
-                                                            Image.asset(
-                                                          'assets/images/error_image.jpg',
+                                                    child: Container(
+                                                      color: Colors.white,
+                                                      child: ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                8.0),
+                                                        child: Image.network(
+                                                          abarrotesItem
+                                                              .coverImage,
                                                           width: 200.0,
-                                                          height: 117.3,
-                                                          fit: BoxFit.fill,
+                                                          height: 160.0,
+                                                          fit: BoxFit.contain,
+                                                          errorBuilder: (context,
+                                                                  error,
+                                                                  stackTrace) =>
+                                                              Image.asset(
+                                                            'assets/images/error_image.jpg',
+                                                            width: 200.0,
+                                                            height: 160.0,
+                                                            fit: BoxFit.contain,
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
@@ -3414,7 +3439,7 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                         CrossAxisAlignment.center,
                                     children: [
                                       Text(
-                                        'Chiles-Semilas',
+                                        'Chiles y Semillas',
                                         style: FlutterFlowTheme.of(context)
                                             .titleMedium
                                             .override(
@@ -3701,21 +3726,24 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                               borderRadius:
                                                   BorderRadius.circular(8.0),
                                             ),
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                              child: Image.network(
-                                                chilesSemillasItem.coverImage,
-                                                width: 200.0,
-                                                height: 117.3,
-                                                fit: BoxFit.fill,
-                                                errorBuilder: (context, error,
-                                                        stackTrace) =>
-                                                    Image.asset(
-                                                  'assets/images/error_image.jpg',
+                                            child: Container(
+                                              color: Colors.white,
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
+                                                child: Image.network(
+                                                  chilesSemillasItem.coverImage,
                                                   width: 200.0,
-                                                  height: 117.3,
-                                                  fit: BoxFit.fill,
+                                                  height: 160.0,
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (context, error,
+                                                          stackTrace) =>
+                                                      Image.asset(
+                                                    'assets/images/error_image.jpg',
+                                                    width: 200.0,
+                                                    height: 160.0,
+                                                    fit: BoxFit.contain,
+                                                  ),
                                                 ),
                                               ),
                                             ),

@@ -784,15 +784,15 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                   size: 15.0,
                                                 ),
                                                 options: FFButtonOptions(
-                                                  height: 26.53,
+                                                  height: 36.0,
                                                   padding: EdgeInsetsDirectional
                                                       .fromSTEB(
                                                           16.0, 0.0, 16.0, 0.0),
                                                   iconPadding:
                                                       EdgeInsetsDirectional
                                                           .fromSTEB(0.0, 0.0,
-                                                              0.0, 0.0),
-                                                  color: Color(0xFFF73034),
+                                                              4.0, 0.0),
+                                                  color: Color(0xFFD32F2F),
                                                   textStyle:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -800,34 +800,16 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                           .override(
                                                             font: GoogleFonts
                                                                 .interTight(
-                                                              fontWeight:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .fontStyle,
+                                                              fontWeight: FontWeight.w600,
                                                             ),
                                                             color: Colors.white,
+                                                            fontSize: 13.0,
                                                             letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontStyle,
                                                           ),
-                                                  elevation: 0.0,
+                                                  elevation: 2.0,
                                                   borderRadius:
                                                       BorderRadius.circular(
-                                                          8.0),
+                                                          10.0),
                                                 ),
                                               ).animateOnPageLoad(animationsMap[
                                                   'buttonOnPageLoadAnimation']!),

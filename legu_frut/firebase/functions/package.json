@@ -15,19 +15,20 @@
     "@langchain/langgraph": "^0.2.23",
     "@langchain/openai": "^0.3.14",
     "@langchain/google-genai": "^0.0.8",
-    "@langchain/anthropic": "^0.1.1"
+    "@langchain/anthropic": "^0.1.1",
+    "googleapis": "^144.0.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
     "eslint-plugin-promise": "^4.2.1"
   },
   "scripts": {
-    "lint": "./node_modules/.bin/eslint --max-warnings=0 .",
+    "lint": "eslint --max-warnings=0 .",
     "serve": "firebase -P legufrut-71350 emulators:start --only functions",
     "shell": "firebase -P legufrut-71350 functions:shell",
     "start": "npm run shell",
     "logs": "firebase -P legufrut-71350 functions:log",
-    "compile": "cp ../../tsconfig.template.json ./tsconfig-compile.json && tsc --project tsconfig-compile.json"
+    "compile": "copy ..\\..\\tsconfig.template.json .\\tsconfig-compile.json && tsc --project tsconfig-compile.json"
   },
   "engines": {
     "node": "20"

@@ -2,6 +2,12 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
+const { google } = require("googleapis");
+
+// ─── Google Sheets Config ─────────────────────────────────────────────────────
+const SPREADSHEET_ID = "1nAlWv0-phS-H1QMH04XFZZpgAERC44Jiv94z0LijY";
+// ─────────────────────────────────────────────────────────────────────────────
+
 const kFcmTokensCollection = "fcm_tokens";
 const kPushNotificationsCollection = "ff_push_notifications";
 const kUserPushNotificationsCollection = "ff_user_push_notifications";
@@ -233,3 +239,192 @@ exports.onUserDeleted = functions.auth.user().onDelete(async (user) => {
   let firestore = admin.firestore();
   let userRef = firestore.doc("users/" + user.uid);
 });
+
+// =============================================================================
+// EXPORTAR PEDIDOS DIARIOS A GOOGLE SHEETS
+// Lee TODOS los productos de TODAS las órdenes del día (sin importar categoría)
+// y los agrupa por productName sumando gramos y piezas.
+// Crea/actualiza una pestaña por fecha en el Google Sheet.
+// =============================================================================
+
+/**
+ * Trigger automático: corre todos los días a las 11:55 PM hora de México.
+ * Si un día no hubo pedidos no escribe nada.
+ */
+exports.exportDailyOrdersToSheets = functions
+  .runWith({ timeoutSeconds: 300, memory: "512MB" })
+  .pubsub.schedule("55 23 * * *")
+  .timeZone("America/Mexico_City")
+  .onRun(async () => {
+    const now = new Date();
+    await exportOrdersForDate(now);
+  });
+
+/**
+ * Trigger manual por HTTP: puedes llamarlo desde el navegador o con curl.
+ * GET https://<region>-legufru-71350.cloudfunctions.net/exportOrdersManual
+ * Parámetro opcional: ?date=2026-03-03  (si no se pone usa el día de hoy)
+ * Parámetro opcional: ?status=entregado (filtra por status de orden)
+ */
+exports.exportOrdersManual = functions
+  .runWith({ timeoutSeconds: 300, memory: "512MB" })
+  .https.onRequest(async (req, res) => {
+    try {
+      const dateParam = req.query.date;
+      const date = dateParam
+        ? new Date(dateParam + "T12:00:00")
+        : new Date();
+      const count = await exportOrdersForDate(date);
+      res.json({
+        success: true,
+        date: date.toISOString().split("T")[0],
+        productsExported: count,
+      });
+    } catch (err) {
+      console.error("Error exportando órdenes:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+/**
+ * Función core: lee todas las órdenes del día, agrupa todos los items
+ * por productName (sumando gramos y piezas), y escribe en Google Sheets.
+ *
+ * @param {Date} date - Fecha a exportar
+ * @returns {number} - Cantidad de productos únicos exportados
+ */
+async function exportOrdersForDate(date) {
+  const db = admin.firestore();
+
+  // Rango del día completo en hora de México (UTC-6)
+  const mexicoCityOffset = -6 * 60; // minutos
+  const utcDate = new Date(date.getTime() + (date.getTimezoneOffset() + mexicoCityOffset) * 60000);
+
+  const startOfDay = new Date(utcDate);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(utcDate);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const dateStr = [
+    startOfDay.getFullYear(),
+    String(startOfDay.getMonth() + 1).padStart(2, "0"),
+    String(startOfDay.getDate()).padStart(2, "0"),
+  ].join("-");
+
+  console.log(`[Sheets] Exportando órdenes para: ${dateStr}`);
+
+  // ── 1. Obtener todas las órdenes del día ────────────────────────────────────
+  const ordersSnap = await db
+    .collection("orders")
+    .where("createdAt", ">=", admin.firestore.Timestamp.fromDate(startOfDay))
+    .where("createdAt", "<=", admin.firestore.Timestamp.fromDate(endOfDay))
+    .get();
+
+  if (ordersSnap.empty) {
+    console.log(`[Sheets] No hay órdenes para ${dateStr}`);
+    return 0;
+  }
+
+  console.log(`[Sheets] Órdenes encontradas: ${ordersSnap.size}`);
+
+  // ── 2. Leer todos los items de todas las órdenes ────────────────────────────
+  // Construye un mapa: productName → { totalGrams, totalPieces, unitType }
+  const productMap = {};
+
+  for (const orderDoc of ordersSnap.docs) {
+    const itemsSnap = await orderDoc.ref.collection("ordersitems").get();
+
+    for (const itemDoc of itemsSnap.docs) {
+      const item = itemDoc.data();
+
+      const productName = (item.productName || "Desconocido").trim();
+      const unitType    = (item.unitType    || "Gramos").trim();
+      const grams       = typeof item.grams      === "number" ? item.grams      : 0;
+      const qtyPieces   = typeof item.qtyPieces  === "number" ? item.qtyPieces  : 0;
+
+      if (!productMap[productName]) {
+        productMap[productName] = {
+          totalGrams:  0,
+          totalPieces: 0,
+          unitType:    unitType,
+        };
+      }
+
+      productMap[productName].totalGrams  += grams;
+      productMap[productName].totalPieces += qtyPieces;
+      // Si alguna orden tiene unitType distinto, mantén el más informativo
+      if (unitType !== "Gramos" && productMap[productName].unitType === "Gramos") {
+        productMap[productName].unitType = unitType;
+      }
+    }
+  }
+
+  const productCount = Object.keys(productMap).length;
+  console.log(`[Sheets] Productos únicos: ${productCount}`);
+
+  if (productCount === 0) {
+    console.log("[Sheets] No hay items en las órdenes. Nada que exportar.");
+    return 0;
+  }
+
+  // ── 3. Construir filas para el Sheet ────────────────────────────────────────
+  const rows = [["date", "productName", "totalGrams", "totalPieces", "unitType"]];
+  const sortedNames = Object.keys(productMap).sort();
+
+  for (const name of sortedNames) {
+    const d = productMap[name];
+    rows.push([dateStr, name, d.totalGrams, d.totalPieces, d.unitType]);
+  }
+
+  // ── 4. Autenticar con la cuenta de servicio de Firebase ────────────────────
+  const auth = new google.auth.GoogleAuth({
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+  const authClient = await auth.getClient();
+  const sheets = google.sheets({ version: "v4", auth: authClient });
+
+  // ── 5. Verificar si ya existe una pestaña para esta fecha ──────────────────
+  const spreadsheet = await sheets.spreadsheets.get({
+    spreadsheetId: SPREADSHEET_ID,
+  });
+  const existingTitles = spreadsheet.data.sheets.map(
+    (s) => s.properties.title
+  );
+
+  if (!existingTitles.includes(dateStr)) {
+    // Crear la pestaña nueva
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      requestBody: {
+        requests: [
+          {
+            addSheet: {
+              properties: { title: dateStr },
+            },
+          },
+        ],
+      },
+    });
+    console.log(`[Sheets] Pestaña creada: ${dateStr}`);
+  } else {
+    // Limpiar datos anteriores antes de reescribir
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${dateStr}!A:Z`,
+    });
+    console.log(`[Sheets] Pestaña existente limpiada: ${dateStr}`);
+  }
+
+  // ── 6. Escribir los datos ────────────────────────────────────────────────────
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${dateStr}!A1`,
+    valueInputOption: "RAW",
+    requestBody: { values: rows },
+  });
+
+  console.log(
+    `[Sheets] ✅ ${productCount} productos exportados a la pestaña ${dateStr}`
+  );
+  return productCount;
+}

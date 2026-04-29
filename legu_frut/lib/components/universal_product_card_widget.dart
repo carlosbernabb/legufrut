@@ -136,23 +136,32 @@ class _UniversalProductCardWidgetState extends State<UniversalProductCardWidget>
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(0.0),
-                bottomRight: Radius.circular(0.0),
-                topLeft: Radius.circular(12.0),
-                topRight: Radius.circular(12.0),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12.0),
+                  topRight: Radius.circular(12.0),
+                ),
               ),
-              child: Image.network(
-                widget.coverimage ?? '',
-                width: double.infinity,
-                height: 117.2,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Image.asset(
-                  'assets/images/error_image.jpg',
+              child: ClipRRect(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(0.0),
+                  bottomRight: Radius.circular(0.0),
+                  topLeft: Radius.circular(12.0),
+                  topRight: Radius.circular(12.0),
+                ),
+                child: Image.network(
+                  widget.coverimage ?? '',
                   width: double.infinity,
-                  height: 117.2,
-                  fit: BoxFit.cover,
+                  height: 160.0,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                    'assets/images/error_image.jpg',
+                    width: double.infinity,
+                    height: 160.0,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),

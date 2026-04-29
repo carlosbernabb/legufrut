@@ -214,7 +214,7 @@ class _NotificacionesWidgetState extends State<NotificacionesWidget>
                             listViewOrdersRecordList[listViewIndex];
                         return Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 0.0),
+                              16.0, 8.0, 16.0, 0.0),
                           child: Container(
                             width: double.infinity,
                             constraints: BoxConstraints(
@@ -223,10 +223,17 @@ class _NotificacionesWidgetState extends State<NotificacionesWidget>
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(12.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 6.0,
+                                  color: Color(0x1A000000),
+                                  offset: Offset(0.0, 2.0),
+                                ),
+                              ],
                               border: Border.all(
-                                color: FlutterFlowTheme.of(context).alternate,
-                                width: 2.0,
+                                color: Color(0xFFE8E5D8),
+                                width: 1.0,
                               ),
                             ),
                             child: Column(
@@ -259,12 +266,14 @@ class _NotificacionesWidgetState extends State<NotificacionesWidget>
                                                 text: TextSpan(
                                                   children: [
                                                     TextSpan(
-                                                      text: 'Orden #: ',
+                                                      text: 'Pedido #',
                                                       style: TextStyle(),
                                                     ),
                                                     TextSpan(
                                                       text: listViewOrdersRecord
-                                                          .reference.id,
+                                                          .reference.id
+                                                          .substring(listViewOrdersRecord.reference.id.length > 8 ? listViewOrdersRecord.reference.id.length - 8 : 0)
+                                                          .toUpperCase(),
                                                       style: TextStyle(
                                                         color:
                                                             FlutterFlowTheme.of(
