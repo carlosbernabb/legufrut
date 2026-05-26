@@ -30,8 +30,6 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
 
   bool _popupEnabled = false;
   bool _popupEnabledInitialized = false;
-  bool _carnasEnabled = false;
-  bool _carnasEnabledInitialized = false;
 
   @override
   void initState() {
@@ -63,7 +61,6 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
       popupTitle: _model.titulotextTextController!.text.trim(),
       popupDesc1: _model.description1TextController!.text.trim(),
       popupDesc2: _model.description2TextController!.text.trim(),
-      carnasEnabled: _carnasEnabled,
     ));
     safeSetState(() => _model.isSaving = false);
 
@@ -115,12 +112,6 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
               safeSetState(() => _popupEnabled = config.popupEnabled);
             });
           }
-          if (!_carnasEnabledInitialized) {
-            _carnasEnabledInitialized = true;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              safeSetState(() => _carnasEnabled = config.carnasEnabled);
-            });
-          }
           if (_model.titulotextTextController!.text.isEmpty &&
               (config.popupTitle?.isNotEmpty ?? false)) {
             _model.titulotextTextController!.text = config.popupTitle!;
@@ -166,82 +157,6 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
                   _sectionLabel('Vista previa'),
                   const SizedBox(height: 10),
                   _buildPreviewCard(),
-                  const SizedBox(height: 28),
-
-                  // ── Categorías ───────────────────────────
-                  _sectionLabel('Categorías'),
-                  const SizedBox(height: 12),
-
-                  // Toggle Carnes
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 4),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: _carnasEnabled
-                                  ? const Color(0xFFFBE9E7)
-                                  : const Color(0xFFF3F4F6),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              Icons.restaurant_rounded,
-                              color: _carnasEnabled
-                                  ? const Color(0xFFBF360C)
-                                  : _kMuted,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Categoría Carnes',
-                                  style: GoogleFonts.interTight(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: _kText,
-                                  ),
-                                ),
-                                Text(
-                                  _carnasEnabled
-                                      ? 'Visible en la app'
-                                      : 'Oculta — actívala cuando estés listo',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: _kMuted,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Switch(
-                            value: _carnasEnabled,
-                            onChanged: (v) =>
-                                safeSetState(() => _carnasEnabled = v),
-                            activeColor: const Color(0xFFBF360C),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 28),
 
                   // ── Form ─────────────────────────────────

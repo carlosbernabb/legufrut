@@ -487,6 +487,13 @@ class _IngredientRowState extends State<_IngredientRow> {
   static const _kBorder = Color(0xFFE5E7EB);
   static const _kRed = Color(0xFFEF5350);
 
+  // Misma lógica que UniversalProductCard: default 'kg', solo 'pza' si saleType lo dice explícitamente
+  static String _unitFromSaleType(String saleType) {
+    final t = saleType.toLowerCase();
+    final isPiece = t.contains('pieza') || t.contains('pza') || t.contains('piece');
+    return isPiece ? 'pza' : 'kg';
+  }
+
   List<ProductsRecord> _suggestions = [];
   ProductsRecord? _selectedProduct;
   final _focusNode = FocusNode();
@@ -519,8 +526,7 @@ class _IngredientRowState extends State<_IngredientRow> {
             .where((p) => p.name.toLowerCase() == name.toLowerCase())
             .firstOrNull;
         if (match != null) {
-          final unit =
-              match.saleType.toLowerCase().contains('kilo') ? 'kg' : 'pza';
+          final unit = _unitFromSaleType(match.saleType);
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               widget.onUnitChanged(unit);
@@ -554,7 +560,7 @@ class _IngredientRowState extends State<_IngredientRow> {
     widget.ing.nameCtrl.removeListener(_onNameChanged);
     widget.ing.nameCtrl.text = p.name;
     widget.ing.nameCtrl.addListener(_onNameChanged);
-    final unit = p.saleType.toLowerCase().contains('kilo') ? 'kg' : 'pza';
+    final unit = _unitFromSaleType(p.saleType);
     widget.onUnitChanged(unit);
     setState(() {
       _selectedProduct = p;
@@ -743,9 +749,7 @@ class _IngredientRowState extends State<_IngredientRow> {
                                 color: _kGreen.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(6)),
                             child: Text(
-                              p.saleType.toLowerCase().contains('kilo')
-                                  ? 'kg'
-                                  : 'pza',
+                              _unitFromSaleType(p.saleType),
                               style: GoogleFonts.inter(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,

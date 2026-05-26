@@ -477,56 +477,93 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
             ),
           ],
 
-          // ── Address section (collapsible) ───────────────────
-          if (order.showorder) ...[
-            const Divider(height: 1, color: _kBorder),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on_rounded,
-                          size: 14, color: _kMuted),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Dirección de entrega',
-                        style: GoogleFonts.interTight(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: _kMuted,
+          // ── Expanded detail (products + address) controlled by eye toggle ──
+          if (order.showorder)
+            StreamBuilder<List<OrdersitemsRecord>>(
+              stream: queryOrdersitemsRecord(parent: order.reference),
+              builder: (context, snap) {
+                final items = snap.data ?? [];
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Products ──────────────────────────────
+                    if (items.isNotEmpty) ...[
+                      const Divider(height: 1, color: _kBorder),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.shopping_basket_rounded,
+                                size: 14, color: _kMuted),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${items.length} producto${items.length == 1 ? '' : 's'}',
+                              style: GoogleFonts.interTight(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _kMuted,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      ...items.map((item) => _buildItemRow(item)),
+                      const SizedBox(height: 4),
                     ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF6F8F0),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: _kBorder),
+
+                    // ── Address ───────────────────────────────
+                    const Divider(height: 1, color: _kBorder),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.location_on_rounded,
+                                  size: 14, color: _kMuted),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Dirección de entrega',
+                                style: GoogleFonts.interTight(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: _kMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF6F8F0),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: _kBorder),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _addressRow('Calle',
+                                    '${order.street} ${order.number}'.trim()),
+                                if (order.neighborhood.isNotEmpty)
+                                  _addressRow('Colonia', order.neighborhood),
+                                if (order.postalCode.isNotEmpty)
+                                  _addressRow('C.P.', order.postalCode),
+                                if (order.referenceNote.isNotEmpty)
+                                  _addressRow(
+                                      'Referencia', order.referenceNote),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _addressRow('Calle',
-                            '${order.street} ${order.number}'.trim()),
-                        if (order.neighborhood.isNotEmpty)
-                          _addressRow('Colonia', order.neighborhood),
-                        if (order.postalCode.isNotEmpty)
-                          _addressRow('C.P.', order.postalCode),
-                        if (order.referenceNote.isNotEmpty)
-                          _addressRow('Referencia', order.referenceNote),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              },
             ),
-          ],
 
           // ── Driver assignment buttons (Pendientes only) ─────
           if (tabType == _TabType.pendiente) ...[
@@ -584,6 +621,72 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
           // ── Bottom padding for Preparando/Entregado ─────────
           if (tabType != _TabType.pendiente)
             const SizedBox(height: 4),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItemRow(OrdersitemsRecord item) {
+    final isKg = item.unitType == 'Gramos';
+    final qty = isKg
+        ? (item.grams >= 1000
+            ? '${(item.grams / 1000).toStringAsFixed(2)} kg'
+            : '${item.grams.toStringAsFixed(0)} g')
+        : '${item.grams.toStringAsFixed(0)} pzas';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              item.coverimage,
+              width: 48,
+              height: 48,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: _kGreenLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.image_not_supported_outlined,
+                    color: _kGreen, size: 20),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.productName,
+                  style: GoogleFonts.interTight(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _kText,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  qty,
+                  style: GoogleFonts.inter(fontSize: 12, color: _kMuted),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '\$${item.unitPrice.toStringAsFixed(2)}',
+            style: GoogleFonts.interTight(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: _kGreen,
+            ),
+          ),
         ],
       ),
     );

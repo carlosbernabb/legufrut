@@ -316,14 +316,32 @@ class FirebaseAuthManager extends AuthManager
     } on FirebaseAuthException catch (e) {
       final errorMsg = switch (e.code) {
         'email-already-in-use' =>
-          'Error: The email is already in use by a different account',
-        'INVALID_LOGIN_CREDENTIALS' =>
-          'Error: The supplied auth credential is incorrect, malformed or has expired',
-        _ => 'Error: ${e.message!}',
+          'Ya existe una cuenta con ese correo electrónico.',
+        'INVALID_LOGIN_CREDENTIALS' ||
+        'wrong-password' ||
+        'user-not-found' =>
+          'Correo o contraseña incorrectos. Revisa tus datos e intenta de nuevo.',
+        'invalid-email' => 'El formato del correo no es válido.',
+        'too-many-requests' =>
+          'Demasiados intentos fallidos. Espera unos minutos e intenta de nuevo.',
+        'network-request-failed' =>
+          'Sin conexión a internet. Verifica tu red e intenta de nuevo.',
+        'user-disabled' => 'Esta cuenta ha sido desactivada.',
+        'requires-recent-login' =>
+          'Por seguridad, vuelve a iniciar sesión para continuar.',
+        'weak-password' =>
+          'La contraseña es muy débil. Usa al menos 6 caracteres.',
+        _ => 'Algo salió mal. Intenta de nuevo.',
       };
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: const Color(0xFFB71C1C),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
       );
       return null;
     } catch (e) {

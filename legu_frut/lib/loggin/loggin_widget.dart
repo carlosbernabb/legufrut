@@ -1818,8 +1818,22 @@ class _LogginWidgetState extends State<LogginWidget>
                                                             .showSnackBar(
                                                           SnackBar(
                                                             content: Text(
-                                                              'Passwords don\'t match!',
+                                                              'Las contraseñas no coinciden.',
                                                             ),
+                                                            backgroundColor:
+                                                                const Color(
+                                                                    0xFFB71C1C),
+                                                            behavior: SnackBarBehavior
+                                                                .floating,
+                                                            margin: const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 16,
+                                                                vertical: 12),
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10)),
                                                           ),
                                                         );
                                                         return;

@@ -743,6 +743,72 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
             ),
           ),
 
+          // Toggle visibilidad — solo Carnes
+          if (key == 'Carnes')
+            StreamBuilder<List<AppConfigRecord>>(
+              stream: queryAppConfigRecord(singleRecord: true),
+              builder: (context, snap) {
+                if (!snap.hasData || snap.data!.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                final config = snap.data!.first;
+                final enabled = config.carnasEnabled;
+                return Column(
+                  children: [
+                    const Divider(height: 1, color: _kBorder),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            enabled
+                                ? Icons.visibility_rounded
+                                : Icons.visibility_off_rounded,
+                            size: 16,
+                            color: enabled
+                                ? const Color(0xFF795548)
+                                : _kMuted,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Visible para clientes',
+                                  style: GoogleFonts.interTight(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: _kText,
+                                  ),
+                                ),
+                                Text(
+                                  enabled
+                                      ? 'Activa — aparece en el home'
+                                      : 'Oculta — actívala cuando estés listo',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 11, color: _kMuted),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: enabled,
+                            onChanged: (v) async {
+                              await config.reference.update(
+                                  createAppConfigRecordData(
+                                      carnasEnabled: v));
+                            },
+                            activeColor: const Color(0xFF795548),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+
           // Products list
           AnimatedSize(
             duration: const Duration(milliseconds: 250),
