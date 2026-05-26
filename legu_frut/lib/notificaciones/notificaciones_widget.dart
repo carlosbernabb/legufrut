@@ -1,19 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'notificaciones_model.dart';
@@ -29,1097 +19,661 @@ class NotificacionesWidget extends StatefulWidget {
   State<NotificacionesWidget> createState() => _NotificacionesWidgetState();
 }
 
-class _NotificacionesWidgetState extends State<NotificacionesWidget>
-    with TickerProviderStateMixin {
+class _NotificacionesWidgetState extends State<NotificacionesWidget> {
   late NotificacionesModel _model;
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  static const _kDarkGreen = Color(0xFF2D5016);
+  static const _kGreen = Color(0xFF2E7D32);
+  static const _kGreenLight = Color(0xFFE8F5E9);
+  static const _kBg = Color(0xFFF8F4EF);
+  static const _kText = Color(0xFF1A1A1A);
+  static const _kMuted = Color(0xFF6B7280);
+  static const _kBorder = Color(0xFFE5E7EB);
+  static const _kRed = Color(0xFFEF5350);
 
-  final animationsMap = <String, AnimationInfo>{};
+  static String _fmtQty(double grams, String unitType) {
+    if (unitType == 'Piezas') {
+      return '${grams.toStringAsFixed(0)} pzas';
+    }
+    if (grams >= 1000) {
+      final kg = grams / 1000;
+      return '${kg == kg.roundToDouble() ? kg.toStringAsFixed(0) : kg.toStringAsFixed(2)} kg';
+    }
+    return '${grams.toStringAsFixed(0)} g';
+  }
+
+  // Status steps
+  static const _steps = [
+    'Recibido',
+    'En preparación',
+    'En camino',
+    'Entregado',
+  ];
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => NotificacionesModel());
-
-    animationsMap.addAll({
-      'rowOnPageLoadAnimation': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(-43.99999999999999, 0.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-      'textOnPageLoadAnimation': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-        ],
-      ),
-      'containerOnPageLoadAnimation': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(50.0, 0.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-    });
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
+  }
+
+  // How many steps are complete for this order
+  int _stepIndex(OrdersRecord order) {
+    if (order.driverStatusText == 'Su pedido ha llegado') return 4;
+    if (order.driverStatusText == 'En camino') return 3;
+    if (order.status == 'Reparto') return 2;
+    return 1;
+  }
+
+  Color _statusColor(int step) {
+    if (step == 4) return _kGreen;
+    if (step == 3) return const Color(0xFF0277BD);
+    if (step == 2) return const Color(0xFFE65100);
+    return const Color(0xFFFF8F00);
+  }
+
+  String _statusLabel(OrdersRecord order) {
+    if (order.status == 'Cancelado') return 'Cancelado';
+    if (order.status == 'Confirmado') return 'Confirmado ✓';
+    if (order.driverStatusText.isNotEmpty) return order.driverStatusText;
+    if (order.status == 'Reparto') return 'En preparación';
+    return 'Pendiente';
+  }
+
+  Color _statusColorForOrder(OrdersRecord order) {
+    if (order.status == 'Cancelado') return _kRed;
+    final step = _stepIndex(order);
+    return _statusColor(step);
+  }
+
+  Future<void> _cancelOrder(OrdersRecord order) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Cancelar pedido',
+            style: GoogleFonts.interTight(fontWeight: FontWeight.w700)),
+        content: Text(
+          '¿Cancelar la orden #${order.reference.id.substring(0, 8).toUpperCase()}? Esta acción no se puede deshacer.',
+          style: GoogleFonts.inter(color: _kMuted, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('No cancelar',
+                style: GoogleFonts.inter(color: _kMuted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Cancelar pedido',
+                style: GoogleFonts.inter(
+                    color: _kRed, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    // Delete order items then order
+    final items = await queryOrdersitemsRecordOnce(
+      parent: order.reference,
+    );
+    for (final item in items) {
+      await item.reference.delete();
+    }
+    await order.reference.delete();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-          automaticallyImplyLeading: false,
-          title: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              FlutterFlowIconButton(
-                borderColor: Colors.transparent,
-                borderRadius: 30.0,
-                buttonSize: 46.0,
-                icon: Icon(
-                  Icons.arrow_back_rounded,
-                  color: FlutterFlowTheme.of(context).primaryText,
-                  size: 25.0,
-                ),
-                onPressed: () async {
-                  context.pushNamed(HomePageWidget.routeName);
-                },
-              ),
-              Text(
-                'Notificaciones',
-                style: FlutterFlowTheme.of(context).headlineMedium.override(
-                      font: GoogleFonts.interTight(
-                        fontWeight: FlutterFlowTheme.of(context)
-                            .headlineMedium
-                            .fontWeight,
-                        fontStyle: FlutterFlowTheme.of(context)
-                            .headlineMedium
-                            .fontStyle,
-                      ),
-                      letterSpacing: 0.0,
-                      fontWeight: FlutterFlowTheme.of(context)
-                          .headlineMedium
-                          .fontWeight,
-                      fontStyle:
-                          FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                    ),
-              ),
-            ],
-          ).animateOnPageLoad(animationsMap['rowOnPageLoadAnimation']!),
-          actions: [],
-          centerTitle: false,
-          elevation: 0.0,
+    context.watch<FFAppState>();
+
+    return Scaffold(
+      backgroundColor: _kBg,
+      appBar: AppBar(
+        backgroundColor: _kDarkGreen,
+        elevation: 0,
+        leading: IconButton(
+          icon:
+              const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          onPressed: () => context.pushNamed(HomePageWidget.routeName),
         ),
-        body: SingleChildScrollView(
-          primary: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 0.0, 0.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
+        title: Text(
+          'Mis Pedidos',
+          style: GoogleFonts.interTight(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: StreamBuilder<List<OrdersRecord>>(
+        stream: queryOrdersRecord(
+          queryBuilder: (q) => q
+              .where('userRef', isEqualTo: currentUserReference)
+              .orderBy('createdAt', descending: true),
+        ),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(color: _kGreen),
+            );
+          }
+
+          final orders = snapshot.data!;
+
+          if (orders.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.receipt_long_outlined,
+                      size: 72, color: _kBorder),
+                  const SizedBox(height: 16),
+                  Text('Sin pedidos aún',
+                      style: GoogleFonts.interTight(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: _kText)),
+                  const SizedBox(height: 6),
+                  Text('Tus pedidos aparecerán aquí',
+                      style: GoogleFonts.inter(
+                          fontSize: 14, color: _kMuted)),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            itemCount: orders.length,
+            itemBuilder: (context, i) => _buildOrderCard(orders[i]),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildOrderCard(OrdersRecord order) {
+    final step = _stepIndex(order);
+    final isCancelado = order.status == 'Cancelado';
+    final statusColor = _statusColorForOrder(order);
+    final shortId = order.reference.id.length > 8
+        ? order.reference.id.substring(0, 8).toUpperCase()
+        : order.reference.id.toUpperCase();
+    final canCancel = !isCancelado &&
+        (order.status != 'Reparto' ||
+            order.driverStatusText == '' ||
+            order.driverStatusText == 'En preparación');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.07),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Top bar: status + ID + date ────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Status badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                  color: statusColor,
+                                  shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              _statusLabel(order),
+                              style: GoogleFonts.interTight(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: statusColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Pedido #$shortId',
+                        style: GoogleFonts.interTight(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: _kText,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      if (order.createdAt != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.access_time_rounded,
+                                  size: 12, color: _kMuted),
+                              const SizedBox(width: 3),
+                              Text(
+                                dateTimeFormat(
+                                    'd MMM yyyy, HH:mm', order.createdAt!),
+                                style: GoogleFonts.inter(
+                                    fontSize: 12, color: _kMuted),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // Total
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'Aquí puedes ver el estado de tu pedido',
-                      style:
-                          FlutterFlowTheme.of(context).headlineMedium.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.normal,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .headlineMedium
-                                      .fontStyle,
+                      '\$${order.subtotal.toStringAsFixed(2)}',
+                      style: GoogleFonts.interTight(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: _kGreen,
+                      ),
+                    ),
+                    if (order.shippingFee > 0)
+                      Text(
+                        '+ \$${order.shippingFee.toStringAsFixed(2)} envío',
+                        style: GoogleFonts.inter(
+                            fontSize: 11, color: _kMuted),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // ── Cancelled banner ──────────────────────────────
+          if (isCancelado) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _kRed.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _kRed.withOpacity(0.35)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.cancel_rounded, color: _kRed, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tu pedido fue cancelado',
+                            style: GoogleFonts.interTight(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: _kRed,
+                            ),
+                          ),
+                          if (order.cancelReason.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                order.cancelReason,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: _kRed.withOpacity(0.8),
                                 ),
-                                fontSize: 15.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.normal,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .fontStyle,
                               ),
-                    ).animateOnPageLoad(
-                        animationsMap['textOnPageLoadAnimation']!),
+                            ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 24.0),
-                child: StreamBuilder<List<OrdersRecord>>(
-                  stream: queryOrdersRecord(
-                    queryBuilder: (ordersRecord) => ordersRecord
-                        .where(
-                          'userRef',
-                          isEqualTo: currentUserReference,
-                        )
-                        .orderBy('createdAt', descending: true),
-                  ),
-                  builder: (context, snapshot) {
-                    // Customize what your widget looks like when it's loading.
-                    if (!snapshot.hasData) {
-                      return Center(
-                        child: SizedBox(
-                          width: 50.0,
-                          height: 50.0,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              FlutterFlowTheme.of(context).primary,
+            ),
+          ],
+
+          // ── Confirmed total banner ─────────────────────────
+          if (order.status == 'Confirmado') ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _kGreenLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _kGreen.withOpacity(0.35)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle_rounded,
+                        color: _kGreen, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pedido confirmado por el negocio',
+                            style: GoogleFonts.interTight(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: _kGreen,
                             ),
                           ),
-                        ),
-                      );
-                    }
-                    List<OrdersRecord> listViewOrdersRecordList =
-                        snapshot.data!;
-
-                    return ListView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      itemCount: listViewOrdersRecordList.length,
-                      itemBuilder: (context, listViewIndex) {
-                        final listViewOrdersRecord =
-                            listViewOrdersRecordList[listViewIndex];
-                        return Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 8.0, 16.0, 0.0),
-                          child: Container(
-                            width: double.infinity,
-                            constraints: BoxConstraints(
-                              maxWidth: 570.0,
-                            ),
-                            decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
-                              borderRadius: BorderRadius.circular(12.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 6.0,
-                                  color: Color(0x1A000000),
-                                  offset: Offset(0.0, 2.0),
-                                ),
-                              ],
-                              border: Border.all(
-                                color: Color(0xFFE8E5D8),
-                                width: 1.0,
+                          if (order.hasConfirmedTotal())
+                            Text(
+                              'Total real: \$${order.confirmedTotal.toStringAsFixed(2)}',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: _kGreen,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      16.0, 12.0, 16.0, 12.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 12.0, 0.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              RichText(
-                                                textScaler:
-                                                    MediaQuery.of(context)
-                                                        .textScaler,
-                                                text: TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Pedido #',
-                                                      style: TextStyle(),
-                                                    ),
-                                                    TextSpan(
-                                                      text: listViewOrdersRecord
-                                                          .reference.id
-                                                          .substring(listViewOrdersRecord.reference.id.length > 8 ? listViewOrdersRecord.reference.id.length - 8 : 0)
-                                                          .toUpperCase(),
-                                                      style: TextStyle(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    )
-                                                  ],
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyLarge
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        0.0, 4.0, 0.0, 0.0),
-                                                child: Text(
-                                                  dateTimeFormat(
-                                                      "M/d H:mm",
-                                                      listViewOrdersRecord
-                                                          .createdAt!),
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                              Row(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 4.0,
-                                                                0.0, 0.0),
-                                                    child: Text(
-                                                      'Status de orden: ',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .labelMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primary,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 4.0,
-                                                                0.0, 0.0),
-                                                    child: Text(
-                                                      valueOrDefault<String>(
-                                                        listViewOrdersRecord
-                                                            .driverStatusText,
-                                                        'En preparación',
-                                                      ),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .labelMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF1900F6),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              if ((listViewOrdersRecord
-                                                          .driverStatusText ==
-                                                      'En camino') ||
-                                                  (listViewOrdersRecord
-                                                          .driverStatusText ==
-                                                      'Su pedido ha llegado'))
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  0.0,
-                                                                  4.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                      child: Text(
-                                                        'Prepare su ',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: Color(
-                                                                      0xFF056028),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  0.0,
-                                                                  4.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                      child: Text(
-                                                        'Efectivo ',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: Color(
-                                                                      0xFF056028),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  0.0,
-                                                                  4.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                      child: Text(
-                                                        'o ',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: Color(
-                                                                      0xFF056028),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  0.0,
-                                                                  4.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                      child: Text(
-                                                        'Transferecnia',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: Color(
-                                                                      0xFF056028),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        0.0, 5.0, 0.0, 0.0),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      formatNumber(
-                                                        listViewOrdersRecord
-                                                            .subtotal,
-                                                        formatType:
-                                                            FormatType.decimal,
-                                                        decimalType: DecimalType
-                                                            .periodDecimal,
-                                                        currency: '\$',
-                                                      ),
-                                                      textAlign: TextAlign.end,
-                                                      style:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .headlineSmall
-                                                              .override(
-                                                                font: GoogleFonts
-                                                                    .interTight(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineSmall
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineSmall
-                                                                      .fontStyle,
-                                                                ),
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .headlineSmall
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .headlineSmall
-                                                                    .fontStyle,
-                                                              ),
-                                                    ),
-                                                    InkWell(
-                                                      splashColor:
-                                                          Colors.transparent,
-                                                      focusColor:
-                                                          Colors.transparent,
-                                                      hoverColor:
-                                                          Colors.transparent,
-                                                      highlightColor:
-                                                          Colors.transparent,
-                                                      onTap: () async {
-                                                        if (listViewOrdersRecord
-                                                                .showorder ==
-                                                            false) {
-                                                          await listViewOrdersRecord
-                                                              .reference
-                                                              .update(
-                                                                  createOrdersRecordData(
-                                                            showorder: true,
-                                                          ));
-                                                        } else {
-                                                          await listViewOrdersRecord
-                                                              .reference
-                                                              .update(
-                                                                  createOrdersRecordData(
-                                                            showorder: false,
-                                                          ));
-                                                        }
-                                                      },
-                                                      child: Icon(
-                                                        Icons
-                                                            .remove_red_eye_outlined,
-                                                        color:
-                                                            Color(0xFF003176),
-                                                        size: 24.0,
-                                                      ),
-                                                    ),
-                                                    if (listViewOrdersRecord
-                                                            .status !=
-                                                        'Reparto')
-                                                      FFButtonWidget(
-                                                        onPressed: () async {
-                                                          _model.querynotis =
-                                                              await queryOrdersitemsRecordOnce();
-                                                          for (int loop1Index =
-                                                                  0;
-                                                              loop1Index <
-                                                                  _model
-                                                                      .querynotis!
-                                                                      .length;
-                                                              loop1Index++) {
-                                                            final currentLoop1Item =
-                                                                _model.querynotis![
-                                                                    loop1Index];
-                                                            await currentLoop1Item
-                                                                .reference
-                                                                .delete();
-                                                          }
-                                                          await listViewOrdersRecord
-                                                              .reference
-                                                              .delete();
-
-                                                          safeSetState(() {});
-                                                        },
-                                                        text: 'Cancelar',
-                                                        options:
-                                                            FFButtonOptions(
-                                                          height: 30.41,
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      16.0,
-                                                                      0.0,
-                                                                      16.0,
-                                                                      0.0),
-                                                          iconPadding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      0.0,
-                                                                      0.0,
-                                                                      0.0,
-                                                                      0.0),
-                                                          color:
-                                                              Color(0xFFEA030A),
-                                                          textStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .override(
-                                                                    font: GoogleFonts
-                                                                        .interTight(
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontStyle,
-                                                                    ),
-                                                                    color: Colors
-                                                                        .white,
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .titleSmall
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .titleSmall
-                                                                        .fontStyle,
-                                                                  ),
-                                                          elevation: 0.0,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0),
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                StreamBuilder<List<OrdersitemsRecord>>(
-                                  stream: queryOrdersitemsRecord(
-                                    parent: listViewOrdersRecord.reference,
-                                  ),
-                                  builder: (context, snapshot) {
-                                    // Customize what your widget looks like when it's loading.
-                                    if (!snapshot.hasData) {
-                                      return Center(
-                                        child: SizedBox(
-                                          width: 50.0,
-                                          height: 50.0,
-                                          child: CircularProgressIndicator(
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              FlutterFlowTheme.of(context)
-                                                  .primary,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    List<OrdersitemsRecord>
-                                        listViewOrdersitemsRecordList =
-                                        snapshot.data!;
-
-                                    return ListView.builder(
-                                      padding: EdgeInsets.zero,
-                                      primary: false,
-                                      shrinkWrap: true,
-                                      scrollDirection: Axis.vertical,
-                                      itemCount:
-                                          listViewOrdersitemsRecordList.length,
-                                      itemBuilder: (context, listViewIndex) {
-                                        final listViewOrdersitemsRecord =
-                                            listViewOrdersitemsRecordList[
-                                                listViewIndex];
-                                        return Visibility(
-                                          visible:
-                                              listViewOrdersRecord.showorder ==
-                                                  true,
-                                          child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 8.0, 0.0, 8.0),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Expanded(
-                                                  child: Container(
-                                                    width: 339.8,
-                                                    height: 76.9,
-                                                    decoration: BoxDecoration(
-                                                      color: Color(0xFFFFFFC9),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          blurRadius: 4.0,
-                                                          color:
-                                                              Color(0x33000000),
-                                                          offset: Offset(
-                                                            2.0,
-                                                            2.0,
-                                                          ),
-                                                        )
-                                                      ],
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        bottomLeft:
-                                                            Radius.circular(
-                                                                15.0),
-                                                        bottomRight:
-                                                            Radius.circular(
-                                                                15.0),
-                                                        topLeft:
-                                                            Radius.circular(
-                                                                15.0),
-                                                        topRight:
-                                                            Radius.circular(
-                                                                15.0),
-                                                      ),
-                                                    ),
-                                                    child: Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  0.0,
-                                                                  4.0,
-                                                                  0.0,
-                                                                  12.0),
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .start,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Expanded(
-                                                            child: Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          5.0,
-                                                                          1.0,
-                                                                          1.0,
-                                                                          1.0),
-                                                              child: ClipRRect(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            12.0),
-                                                                child: Image
-                                                                    .network(
-                                                                  listViewOrdersitemsRecord
-                                                                      .coverimage,
-                                                                  width: 70.0,
-                                                                  height: 70.0,
-                                                                  fit: BoxFit
-                                                                      .cover,
-                                                                  errorBuilder: (context,
-                                                                          error,
-                                                                          stackTrace) =>
-                                                                      Image
-                                                                          .asset(
-                                                                    'assets/images/error_image.jpg',
-                                                                    width: 70.0,
-                                                                    height:
-                                                                        70.0,
-                                                                    fit: BoxFit
-                                                                        .cover,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Expanded(
-                                                            flex: 3,
-                                                            child: Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          8.0,
-                                                                          0.0,
-                                                                          4.0,
-                                                                          0.0),
-                                                              child: Column(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .max,
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Expanded(
-                                                                    child:
-                                                                        Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          15.0,
-                                                                          0.0),
-                                                                      child:
-                                                                          Row(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.max,
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceBetween,
-                                                                        children: [
-                                                                          Text(
-                                                                            listViewOrdersitemsRecord.productName,
-                                                                            style: FlutterFlowTheme.of(context).titleLarge.override(
-                                                                                  font: GoogleFonts.interTight(
-                                                                                    fontWeight: FlutterFlowTheme.of(context).titleLarge.fontWeight,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).titleLarge.fontStyle,
-                                                                                  ),
-                                                                                  fontSize: 15.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FlutterFlowTheme.of(context).titleLarge.fontWeight,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).titleLarge.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                          Text(
-                                                                            formatNumber(
-                                                                              listViewOrdersitemsRecord.unitPrice,
-                                                                              formatType: FormatType.decimal,
-                                                                              decimalType: DecimalType.periodDecimal,
-                                                                              currency: '\$',
-                                                                            ),
-                                                                            textAlign:
-                                                                                TextAlign.end,
-                                                                            style: FlutterFlowTheme.of(context).titleLarge.override(
-                                                                                  font: GoogleFonts.interTight(
-                                                                                    fontWeight: FlutterFlowTheme.of(context).titleLarge.fontWeight,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).titleLarge.fontStyle,
-                                                                                  ),
-                                                                                  fontSize: 15.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FlutterFlowTheme.of(context).titleLarge.fontWeight,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).titleLarge.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                  Expanded(
-                                                                    child:
-                                                                        Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          15.0,
-                                                                          0.0),
-                                                                      child:
-                                                                          Row(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.max,
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceBetween,
-                                                                        children: [
-                                                                          Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                0.0,
-                                                                                4.0,
-                                                                                0.0,
-                                                                                0.0),
-                                                                            child:
-                                                                                RichText(
-                                                                              textScaler: MediaQuery.of(context).textScaler,
-                                                                              text: TextSpan(
-                                                                                children: [
-                                                                                  TextSpan(
-                                                                                    text: listViewOrdersitemsRecord.unitType == 'Gramos' ? 'Gramos: ' : 'Piezas: ',
-                                                                                    style: TextStyle(),
-                                                                                  ),
-                                                                                  TextSpan(
-                                                                                    text: formatNumber(
-                                                                                      listViewOrdersitemsRecord.grams,
-                                                                                      formatType: FormatType.decimal,
-                                                                                      decimalType: DecimalType.periodDecimal,
-                                                                                    ),
-                                                                                    style: TextStyle(),
-                                                                                  )
-                                                                                ],
-                                                                                style: FlutterFlowTheme.of(context).labelSmall.override(
-                                                                                      font: GoogleFonts.inter(
-                                                                                        fontWeight: FlutterFlowTheme.of(context).labelSmall.fontWeight,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
-                                                                                      ),
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FlutterFlowTheme.of(context).labelSmall.fontWeight,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                35.0,
-                                                                                0.0,
-                                                                                0.0,
-                                                                                0.0),
-                                                                            child:
-                                                                                Text(
-                                                                              '\$/kg',
-                                                                              textAlign: TextAlign.end,
-                                                                              style: FlutterFlowTheme.of(context).labelSmall.override(
-                                                                                    font: GoogleFonts.inter(
-                                                                                      fontWeight: FontWeight.normal,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
-                                                                                    ),
-                                                                                    letterSpacing: 0.0,
-                                                                                    fontWeight: FontWeight.normal,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
-                                                                                  ),
-                                                                            ),
-                                                                          ),
-                                                                          Text(
-                                                                            formatNumber(
-                                                                              listViewOrdersitemsRecord.pricePerKg,
-                                                                              formatType: FormatType.decimal,
-                                                                              decimalType: DecimalType.periodDecimal,
-                                                                              currency: '\$',
-                                                                            ),
-                                                                            textAlign:
-                                                                                TextAlign.end,
-                                                                            style: FlutterFlowTheme.of(context).labelSmall.override(
-                                                                                  font: GoogleFonts.inter(
-                                                                                    fontWeight: FlutterFlowTheme.of(context).labelSmall.fontWeight,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
-                                                                                  ),
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FlutterFlowTheme.of(context).labelSmall.fontWeight,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ).animateOnPageLoad(
-                              animationsMap['containerOnPageLoadAnimation']!),
-                        );
-                      },
-                    );
-                  },
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+          ],
+
+          // ── Progress timeline (not shown for cancelled orders) ─
+          if (!isCancelado)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              child: _buildTimeline(step, order.status == 'Confirmado' ? _kGreen : statusColor),
+            ),
+
+          // ── Delivery note (when on the way) ───────────────
+          if (step >= 3) ...[
+            const Divider(height: 1, color: _kBorder),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              child: Row(
+                children: [
+                  Icon(
+                    step == 4
+                        ? Icons.check_circle_rounded
+                        : Icons.delivery_dining_rounded,
+                    size: 16,
+                    color: statusColor,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    step == 4
+                        ? 'Tu pedido ha llegado. ¡Prepara tu pago!'
+                        : 'Tu pedido está en camino. ¡Prepara tu pago!',
+                    style: GoogleFonts.interTight(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: statusColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          // ── Order items (expandable) ───────────────────────
+          StreamBuilder<List<OrdersitemsRecord>>(
+            stream: queryOrdersitemsRecord(parent: order.reference),
+            builder: (context, snap) {
+              if (!snap.hasData || snap.data!.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              final items = snap.data!;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(height: 1, color: _kBorder),
+
+                  // Toggle header
+                  InkWell(
+                    onTap: () async {
+                      await order.reference.update(
+                          createOrdersRecordData(
+                              showorder: !order.showorder));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.shopping_basket_rounded,
+                              size: 16, color: _kMuted),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${items.length} producto${items.length == 1 ? '' : 's'}',
+                            style: GoogleFonts.interTight(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _kText,
+                            ),
+                          ),
+                          const Spacer(),
+                          Icon(
+                            order.showorder
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            size: 20,
+                            color: _kMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Items list
+                  if (order.showorder)
+                    ...items.map((item) => _buildItemRow(item)),
+                ],
+              );
+            },
+          ),
+
+          // ── Bottom actions ────────────────────────────────
+          if (canCancel) ...[
+            const Divider(height: 1, color: _kBorder),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+              child: GestureDetector(
+                onTap: () => _cancelOrder(order),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _kRed.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border:
+                        Border.all(color: _kRed.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.cancel_outlined,
+                          size: 16, color: _kRed),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Cancelar pedido',
+                        style: GoogleFonts.interTight(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: _kRed,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ] else
+            const SizedBox(height: 4),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeline(int completedStep, Color activeColor) {
+    return Row(
+      children: List.generate(_steps.length, (i) {
+        final done = i < completedStep;
+        final active = i == completedStep - 1;
+        final isLast = i == _steps.length - 1;
+
+        return Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    // Dot
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: done ? activeColor : Colors.white,
+                        border: Border.all(
+                          color: done ? activeColor : _kBorder,
+                          width: 2,
+                        ),
+                      ),
+                      child: done
+                          ? Icon(Icons.check_rounded,
+                              size: 11, color: Colors.white)
+                          : null,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _steps[i],
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 9,
+                        fontWeight: active
+                            ? FontWeight.w700
+                            : FontWeight.w400,
+                        color: done ? activeColor : _kMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Connector line
+              if (!isLast)
+                Expanded(
+                  child: Container(
+                    height: 2,
+                    margin: const EdgeInsets.only(bottom: 18),
+                    color: i < completedStep - 1 ? activeColor : _kBorder,
+                  ),
+                ),
             ],
           ),
-        ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildItemRow(OrdersitemsRecord item) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      child: Row(
+        children: [
+          // Product image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              item.coverimage,
+              width: 54,
+              height: 54,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: _kGreenLight,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.image_not_supported_outlined,
+                    color: _kGreen, size: 22),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Name + quantity
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.productName,
+                  style: GoogleFonts.interTight(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _kText,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _fmtQty(item.grams, item.unitType),
+                  style: GoogleFonts.inter(
+                      fontSize: 12, color: _kMuted),
+                ),
+              ],
+            ),
+          ),
+
+          // Price
+          Text(
+            '\$${item.unitPrice.toStringAsFixed(2)}',
+            style: GoogleFonts.interTight(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: _kGreen,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -97,8 +97,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => LogginWidget(),
         ),
         FFRoute(
+          name: AdminHubWidget.routeName,
+          path: AdminHubWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => AdminHubWidget(),
+        ),
+        FFRoute(
           name: AdmincreateproductWidget.routeName,
           path: AdmincreateproductWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => AdmincreateproductWidget(),
         ),
         FFRoute(
@@ -121,21 +128,37 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: OrdenesAdminWidget.routeName,
           path: OrdenesAdminWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => OrdenesAdminWidget(),
         ),
         FFRoute(
           name: DriverPanelWidget.routeName,
           path: DriverPanelWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => DriverPanelWidget(),
         ),
         FFRoute(
           name: NotificacionesWidget.routeName,
           path: NotificacionesWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => NotificacionesWidget(),
+        ),
+        FFRoute(
+          name: ConductoresWidget.routeName,
+          path: ConductoresWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => ConductoresWidget(),
+        ),
+        FFRoute(
+          name: RecetasAdminWidget.routeName,
+          path: RecetasAdminWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => RecetasAdminWidget(),
         ),
         FFRoute(
           name: RecuadroAlertaWidget.routeName,
           path: RecuadroAlertaWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => RecuadroAlertaWidget(),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),

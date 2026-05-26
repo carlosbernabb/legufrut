@@ -47,7 +47,11 @@
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
-		<key>NSCameraUsageDescription</key>
+		<key>NSLocationWhenInUseUsageDescription</key>
+			<string>LeguFrut necesita tu ubicación para detectar automáticamente cuando llegues a cada entrega.</string>
+			<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+			<string>LeguFrut necesita tu ubicación en todo momento para rastrear tus rutas de entrega en tiempo real.</string>
+			<key>NSCameraUsageDescription</key>
 		<string>In order to take a picture or video, this app requires permission to access the camera.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>In order to upload data, this app requires permission to access the photo library.</string>

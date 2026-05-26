@@ -1,42 +1,16 @@
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_count_controller.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import 'universal_product_card_widget.dart' show UniversalProductCardWidget;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
-class UniversalProductCardModel extends FlutterFlowModel<UniversalProductCardWidget> {
-  ///  Local state fields for this component.
+class UniversalProductCardModel
+    extends FlutterFlowModel<UniversalProductCardWidget> {
+  // '' = not yet initialized; will be set on first render based on saleType
+  String selectedUnit = '';
+  double quantity = 1.0;
+  bool isAddingToCart = false;
 
-  // For weight-based products
-  double? grams = 0.0;
-  int? gramsint = 0;
-  int? kilosInt = 1;
-
-  // For piece-based products
-  int? pieces = 1;
-
-  ///  State fields for stateful widgets in this component.
-
-  // State field(s) for Kiloscounter widget.
-  int? kiloscounterValue;
-  // State field(s) for gramscounter widget.
-  int? gramscounterValue;
-  // State field(s) for CountControlPieces widget.
-  int? countControlPiecesValue;
-  
-  // Stores action output result for [Firestore Query - Query a collection] action in Button widget.
+  // Stores existing cart item for update logic
   CartRecord? existingItem;
 
   @override

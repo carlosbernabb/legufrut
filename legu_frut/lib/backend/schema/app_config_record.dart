@@ -36,11 +36,35 @@ class AppConfigRecord extends FirestoreRecord {
   String get popupDesc2 => _popupDesc2 ?? '';
   bool hasPopupDesc2() => _popupDesc2 != null;
 
+  // "carnas_enabled" field.
+  bool? _carnasEnabled;
+  bool get carnasEnabled => _carnasEnabled ?? false;
+  bool hasCarnasEnabled() => _carnasEnabled != null;
+
+  // "driver1_email" field.
+  String? _driver1Email;
+  String get driver1Email => _driver1Email ?? '';
+  bool hasDriver1Email() => _driver1Email != null;
+
+  // "driver2_email" field.
+  String? _driver2Email;
+  String get driver2Email => _driver2Email ?? '';
+  bool hasDriver2Email() => _driver2Email != null;
+
+  // "driver3_email" field.
+  String? _driver3Email;
+  String get driver3Email => _driver3Email ?? '';
+  bool hasDriver3Email() => _driver3Email != null;
+
   void _initializeFields() {
     _popupEnabled = snapshotData['popup_enabled'] as bool?;
     _popupTitle = snapshotData['popup_title'] as String?;
     _popupDesc1 = snapshotData['popup_desc_1'] as String?;
     _popupDesc2 = snapshotData['popup_desc_2'] as String?;
+    _carnasEnabled = snapshotData['carnas_enabled'] as bool?;
+    _driver1Email = snapshotData['driver1_email'] as String?;
+    _driver2Email = snapshotData['driver2_email'] as String?;
+    _driver3Email = snapshotData['driver3_email'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -82,6 +106,7 @@ Map<String, dynamic> createAppConfigRecordData({
   String? popupTitle,
   String? popupDesc1,
   String? popupDesc2,
+  bool? carnasEnabled,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -89,6 +114,7 @@ Map<String, dynamic> createAppConfigRecordData({
       'popup_title': popupTitle,
       'popup_desc_1': popupDesc1,
       'popup_desc_2': popupDesc2,
+      'carnas_enabled': carnasEnabled,
     }.withoutNulls,
   );
 
@@ -103,12 +129,13 @@ class AppConfigRecordDocumentEquality implements Equality<AppConfigRecord> {
     return e1?.popupEnabled == e2?.popupEnabled &&
         e1?.popupTitle == e2?.popupTitle &&
         e1?.popupDesc1 == e2?.popupDesc1 &&
-        e1?.popupDesc2 == e2?.popupDesc2;
+        e1?.popupDesc2 == e2?.popupDesc2 &&
+        e1?.carnasEnabled == e2?.carnasEnabled;
   }
 
   @override
-  int hash(AppConfigRecord? e) => const ListEquality()
-      .hash([e?.popupEnabled, e?.popupTitle, e?.popupDesc1, e?.popupDesc2]);
+  int hash(AppConfigRecord? e) => const ListEquality().hash(
+      [e?.popupEnabled, e?.popupTitle, e?.popupDesc1, e?.popupDesc2, e?.carnasEnabled]);
 
   @override
   bool isValidKey(Object? o) => o is AppConfigRecord;

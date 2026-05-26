@@ -34,22 +34,27 @@ class HomePageModel extends FlutterFlowModel<HomePageWidget> {
   TextEditingController? textController;
   String? Function(BuildContext, String?)? textControllerValidator;
   List<ProductsRecord> simpleSearchResults = [];
-  // Models for UniversalProductCard dynamic component.
+
+  // Models for UniversalProductCard - Frutas search results
   late FlutterFlowDynamicModels<UniversalProductCardModel> productcardModels1;
-  // Models for UniversalProductCard dynamic component.
+  // Models for UniversalProductCard - Frutas normal view
   late FlutterFlowDynamicModels<UniversalProductCardModel> productcardModels2;
-  // Models for UniversalProductCard dynamic component.
+  // Models for UniversalProductCard - Verduras normal view
   late FlutterFlowDynamicModels<UniversalProductCardModel> productcardModels3;
-  // Models for UniversalProductCard dynamic component.
+  // Models for UniversalProductCard - Verduras search (reserved)
   late FlutterFlowDynamicModels<UniversalProductCardModel> productcardModels4;
-  // Models for UniversalProductCard dynamic component.
+  // Models for UniversalProductCard - Abarrotes normal view
   late FlutterFlowDynamicModels<UniversalProductCardModel> piezascomponentModels1;
-  // Models for UniversalProductCard dynamic component.
+  // Models for UniversalProductCard - Abarrotes search (reserved)
   late FlutterFlowDynamicModels<UniversalProductCardModel> piezascomponentModels2;
-  // Models for UniversalProductCard dynamic component.
+  // Models for UniversalProductCard - Chiles normal view
   late FlutterFlowDynamicModels<UniversalProductCardModel> productcardModels5;
-  // Models for UniversalProductCard dynamic component.
+  // Models for UniversalProductCard - Chiles search (reserved)
   late FlutterFlowDynamicModels<UniversalProductCardModel> productcardModels6;
+  // Models for UniversalProductCard - Desechables y Limpieza normal view
+  late FlutterFlowDynamicModels<UniversalProductCardModel> productcardModels7;
+  // Models for UniversalProductCard - Carnes normal view (activated by admin)
+  late FlutterFlowDynamicModels<UniversalProductCardModel> productcardModels8;
 
   @override
   void initState(BuildContext context) {
@@ -57,12 +62,12 @@ class HomePageModel extends FlutterFlowModel<HomePageWidget> {
     productcardModels2 = FlutterFlowDynamicModels(() => UniversalProductCardModel());
     productcardModels3 = FlutterFlowDynamicModels(() => UniversalProductCardModel());
     productcardModels4 = FlutterFlowDynamicModels(() => UniversalProductCardModel());
-    piezascomponentModels1 =
-        FlutterFlowDynamicModels(() => UniversalProductCardModel());
-    piezascomponentModels2 =
-        FlutterFlowDynamicModels(() => UniversalProductCardModel());
+    piezascomponentModels1 = FlutterFlowDynamicModels(() => UniversalProductCardModel());
+    piezascomponentModels2 = FlutterFlowDynamicModels(() => UniversalProductCardModel());
     productcardModels5 = FlutterFlowDynamicModels(() => UniversalProductCardModel());
     productcardModels6 = FlutterFlowDynamicModels(() => UniversalProductCardModel());
+    productcardModels7 = FlutterFlowDynamicModels(() => UniversalProductCardModel());
+    productcardModels8 = FlutterFlowDynamicModels(() => UniversalProductCardModel());
   }
 
   @override
@@ -78,5 +83,7 @@ class HomePageModel extends FlutterFlowModel<HomePageWidget> {
     piezascomponentModels2.dispose();
     productcardModels5.dispose();
     productcardModels6.dispose();
+    productcardModels7.dispose();
+    productcardModels8.dispose();
   }
 }

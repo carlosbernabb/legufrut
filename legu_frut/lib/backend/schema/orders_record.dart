@@ -116,6 +116,16 @@ class OrdersRecord extends FirestoreRecord {
   String get userToken => _userToken ?? '';
   bool hasUserToken() => _userToken != null;
 
+  // "confirmedTotal" field.
+  double? _confirmedTotal;
+  double get confirmedTotal => _confirmedTotal ?? 0.0;
+  bool hasConfirmedTotal() => _confirmedTotal != null;
+
+  // "cancelReason" field.
+  String? _cancelReason;
+  String get cancelReason => _cancelReason ?? '';
+  bool hasCancelReason() => _cancelReason != null;
+
   void _initializeFields() {
     _userRef = snapshotData['userRef'] as DocumentReference?;
     _createdAt = snapshotData['createdAt'] as DateTime?;
@@ -137,6 +147,8 @@ class OrdersRecord extends FirestoreRecord {
     _driverStatusText = snapshotData['driverStatusText'] as String?;
     _driverStep = castToType<int>(snapshotData['driverStep']);
     _userToken = snapshotData['userToken'] as String?;
+    _confirmedTotal = castToType<double>(snapshotData['confirmedTotal']);
+    _cancelReason = snapshotData['cancelReason'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -193,6 +205,8 @@ Map<String, dynamic> createOrdersRecordData({
   String? driverStatusText,
   int? driverStep,
   String? userToken,
+  double? confirmedTotal,
+  String? cancelReason,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -216,6 +230,8 @@ Map<String, dynamic> createOrdersRecordData({
       'driverStatusText': driverStatusText,
       'driverStep': driverStep,
       'userToken': userToken,
+      'confirmedTotal': confirmedTotal,
+      'cancelReason': cancelReason,
     }.withoutNulls,
   );
 

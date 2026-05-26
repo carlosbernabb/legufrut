@@ -1,4 +1,5 @@
 // Export pages
+export '/admin_hub/admin_hub_widget.dart' show AdminHubWidget;
 export '/loggin/loggin_widget.dart' show LogginWidget;
 export '/admincreateproduct/admincreateproduct_widget.dart'
     show AdmincreateproductWidget;
@@ -9,3 +10,5 @@ export '/ordenes_admin/ordenes_admin_widget.dart' show OrdenesAdminWidget;
 export '/driver_panel/driver_panel_widget.dart' show DriverPanelWidget;
 export '/notificaciones/notificaciones_widget.dart' show NotificacionesWidget;
 export '/recuadro_alerta/recuadro_alerta_widget.dart' show RecuadroAlertaWidget;
+export '/conductores/conductores_widget.dart' show ConductoresWidget;
+export '/recetas_admin/recetas_admin_widget.dart' show RecetasAdminWidget;

@@ -1,18 +1,11 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_count_controller.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/loggin/loggin_widget.dart';
-import 'dart:math';
-import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'universal_product_card_model.dart';
@@ -39,16 +32,50 @@ class UniversalProductCardWidget extends StatefulWidget {
       _UniversalProductCardWidgetState();
 }
 
-class _UniversalProductCardWidgetState extends State<UniversalProductCardWidget>
-    with TickerProviderStateMixin {
+class _UniversalProductCardWidgetState
+    extends State<UniversalProductCardWidget> {
   late UniversalProductCardModel _model;
 
-  final animationsMap = <String, AnimationInfo>{};
+  static const _kGreen = Color(0xFF2E7D32);
+  static const _kGreenLight = Color(0xFFE8F5E9);
+  static const _kBorder = Color(0xFFE5E7EB);
+  static const _kText = Color(0xFF1A1A1A);
+  static const _kMuted = Color(0xFF6B7280);
 
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
+  bool get _isPieceType {
+    final t = widget.saleType?.toLowerCase() ?? '';
+    return t.contains('pieza') ||
+        t.contains('pza') ||
+        t.contains('unidad') ||
+        t == 'por pieza' ||
+        t.contains('piece');
+  }
+
+  List<String> get _availableUnits => _isPieceType ? ['pza'] : ['kg', 'g'];
+
+  double get _stepSize => _model.selectedUnit == 'g' ? 100.0 : 1.0;
+  double get _minQuantity => _model.selectedUnit == 'g' ? 100.0 : 1.0;
+
+  String get _unitLabel => _isPieceType ? 'pza' : 'kg';
+
+  String _formatQuantity() {
+    if (_model.selectedUnit == 'g') {
+      return '${_model.quantity.toInt()} g';
+    } else if (_model.selectedUnit == 'pza') {
+      return '${_model.quantity.toInt()} pza';
+    } else {
+      return '${_model.quantity.toInt()} kg';
+    }
+  }
+
+  double _calculateTotalPrice() {
+    final p = widget.price ?? 0.0;
+    if (_model.selectedUnit == 'g') {
+      return p * (_model.quantity / 1000.0);
+    } else {
+      // kg or pza: quantity is already in units
+      return p * _model.quantity;
+    }
   }
 
   @override
@@ -56,591 +83,412 @@ class _UniversalProductCardWidgetState extends State<UniversalProductCardWidget>
     super.initState();
     _model = createModel(context, () => UniversalProductCardModel());
 
-    animationsMap.addAll({
-      'containerOnPageLoadAnimation': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(60.0, 0.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-    });
-    setupAnimations(
-      animationsMap.values.where((anim) =>
-          anim.trigger == AnimationTrigger.onActionTrigger ||
-          !anim.applyInitialState),
-      this,
-    );
+    // Initialize unit only on first render (model state persists across rebuilds)
+    if (_model.selectedUnit.isEmpty) {
+      _model.selectedUnit = _isPieceType ? 'pza' : 'kg';
+      _model.quantity = 1.0;
+    }
   }
 
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
   }
 
-  bool get _isPieceType {
-    final type = widget.saleType?.toLowerCase() ?? '';
-    return type.contains('pieza') || type.contains('unidad') || type == 'por pieza' || type.contains('piece');
+  void _selectUnit(String unit) {
+    safeSetState(() {
+      _model.selectedUnit = unit;
+      _model.quantity = unit == 'g' ? 100.0 : 1.0;
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Logic for Price Display
-    double calculatePrice() {
-      if (_isPieceType) {
-        return (widget.price ?? 0.0) * (_model.pieces ?? 1);
-      } else {
-        return (widget.price ?? 0.0) *
-            ((_model.kilosInt ?? 0) + (_model.gramsint ?? 0) / 1000.0);
-      }
+  void _increment() {
+    safeSetState(() {
+      _model.quantity =
+          (_model.quantity + _stepSize).clamp(_minQuantity, 10000);
+    });
+  }
+
+  void _decrement() {
+    safeSetState(() {
+      _model.quantity =
+          (_model.quantity - _stepSize).clamp(_minQuantity, 10000);
+    });
+  }
+
+  Future<void> _addToCart() async {
+    if (_model.isAddingToCart) return;
+
+    if (!loggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Inicia sesión para agregar al carrito',
+            style: GoogleFonts.inter(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFFFF7043),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      await Future.delayed(const Duration(milliseconds: 400));
+      context.pushNamed(LogginWidget.routeName);
+      return;
     }
 
-    return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 0.0, 0.0),
-      child: Container(
-        width: 210.4,
-        height: 385.0, // Optimized height to fit content without excess whitespace
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 8.0,
-              color: Color(0x230F1113),
-              offset: Offset(
-                0.0,
-                4.0,
-              ),
-            )
-          ],
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(
-            color: FlutterFlowTheme.of(context).primaryBackground,
-            width: 1.0,
+    safeSetState(() => _model.isAddingToCart = true);
+
+    try {
+      // Determine grams to store and unit price
+      final double gramsToAdd;
+      final double unitPrice;
+      final String unitTypeStr;
+
+      if (_model.selectedUnit == 'g') {
+        gramsToAdd = _model.quantity;
+        unitPrice = (widget.price ?? 0) * (_model.quantity / 1000.0);
+        unitTypeStr = 'g';
+      } else if (_model.selectedUnit == 'pza') {
+        gramsToAdd = _model.quantity;
+        unitPrice = (widget.price ?? 0) * _model.quantity;
+        unitTypeStr = 'Piezas';
+      } else {
+        // kg
+        gramsToAdd = _model.quantity * 1000;
+        unitPrice = (widget.price ?? 0) * _model.quantity;
+        unitTypeStr = 'kg';
+      }
+
+      // Check for existing cart item
+      final existing = await queryCartRecordOnce(
+        queryBuilder: (q) => q
+            .where('productRef', isEqualTo: widget.productRef)
+            .where('userRef', isEqualTo: currentUserReference),
+        singleRecord: true,
+      ).then((s) => s.firstOrNull);
+
+      if (existing != null) {
+        // Update existing item — accumulate grams/units
+        final newGrams = existing.grams + gramsToAdd;
+        final double newUnitPrice;
+        if (unitTypeStr == 'Piezas') {
+          newUnitPrice = (widget.price ?? 0) * newGrams;
+        } else {
+          newUnitPrice = (widget.price ?? 0) * (newGrams / 1000.0);
+        }
+        await existing.reference.update(createCartRecordData(
+          grams: newGrams,
+          unitPrice: newUnitPrice,
+          unitType: unitTypeStr,
+        ));
+      } else {
+        // Create new cart item
+        await CartRecord.collection.doc().set(createCartRecordData(
+          productRef: widget.productRef,
+          productName: widget.productname,
+          pricePerKg: widget.price,
+          grams: gramsToAdd,
+          unitPrice: unitPrice,
+          createdAt: getCurrentTimestamp,
+          coverimage: widget.coverimage,
+          unitType: unitTypeStr,
+          userRef: currentUserReference,
+        ));
+      }
+
+      // Reset quantity after adding
+      safeSetState(() {
+        _model.quantity = _model.selectedUnit == 'g' ? 100.0 : 1.0;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  '${widget.productname ?? 'Producto'} agregado al carrito',
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                ),
+              ],
+            ),
+            backgroundColor: _kGreen,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
           ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12.0),
-                  topRight: Radius.circular(12.0),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al agregar: $e',
+                style: GoogleFonts.inter(color: Colors.white)),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      safeSetState(() => _model.isAddingToCart = false);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  BUILD
+  // ─────────────────────────────────────────────────────────
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.07),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFF0F0F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Image ──────────────────────────────────────────
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(0.0),
-                  bottomRight: Radius.circular(0.0),
-                  topLeft: Radius.circular(12.0),
-                  topRight: Radius.circular(12.0),
-                ),
-                child: Image.network(
-                  widget.coverimage ?? '',
-                  width: double.infinity,
-                  height: 160.0,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                    'assets/images/error_image.jpg',
-                    width: double.infinity,
-                    height: 160.0,
+                child: AspectRatio(
+                  aspectRatio: 1.1,
+                  child: Image.network(
+                    widget.coverimage ?? '',
                     fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: const Color(0xFFF5F5F5),
+                      child: const Icon(Icons.image_not_supported_outlined,
+                          color: Color(0xFFBDBDBD), size: 40),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(12.0, 10.0, 12.0, 12.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.85),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.favorite_border,
+                      size: 16, color: Color(0xFFBDBDBD)),
+                ),
+              ),
+            ],
+          ),
+
+          // ── Content ────────────────────────────────────────
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 5.0),
-                        child: Text(
-                          widget.productname ?? 'Producto',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                              FlutterFlowTheme.of(context).bodyLarge.override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyLarge
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyLarge
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                  ),
-                        ),
-                      ),
-                      // Price Tag
-                      Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 5.0),
-                        child: Container(
-                          width: 100.0,
-                          height: 32.0,
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context).primaryText,
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          alignment: AlignmentDirectional(0.0, 0.0),
-                          child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                2.0, 0.0, 2.0, 0.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      5.0, 0.0, 5.0, 0.0),
-                                  child: Text(
-                                    valueOrDefault<String>(
-                                      formatNumber(
-                                        calculatePrice(),
-                                        formatType: FormatType.decimal,
-                                        decimalType: DecimalType.periodDecimal,
-                                        currency: '\$',
-                                      ),
-                                      '\$',
-                                    ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryBackground,
-                                          letterSpacing: 0.0,
-                                        ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      // CONTROLS
-                      if (_isPieceType)
-                        // Use Piece Controls
-                        Padding(
-                          padding:
-                              EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 5.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 90.0,
-                                height: 40.0,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  shape: BoxShape.rectangle,
-                                ),
-                                child: FlutterFlowCountController(
-                                  decrementIconBuilder: (enabled) => Icon(
-                                    Icons.remove_rounded,
-                                    color: enabled
-                                        ? Color(0xFF006701)
-                                        : Color(0xFFFF0000),
-                                    size: 15.0,
-                                  ),
-                                  incrementIconBuilder: (enabled) => Icon(
-                                    Icons.add_rounded,
-                                    color: enabled
-                                        ? Color(0xFF006701)
-                                        : Color(0xFFFF0000),
-                                    size: 15.0,
-                                  ),
-                                  countBuilder: (count) => Text(
-                                    count.toString(),
-                                    style: FlutterFlowTheme.of(context)
-                                        .titleLarge // Adjusted font size in orig
-                                        .override(
-                                          font: GoogleFonts.interTight(),
-                                          fontSize: 15.0,
-                                          letterSpacing: 0.0,
-                                        ),
-                                  ),
-                                  count: _model.countControlPiecesValue ??=
-                                      _model.pieces!,
-                                  updateCount: (count) async {
-                                    safeSetState(() =>
-                                        _model.countControlPiecesValue = count);
-                                    _model.pieces =
-                                        _model.countControlPiecesValue;
-                                    safeSetState(() {});
-                                  },
-                                  stepSize: 1,
-                                  minimum: 0,
-                                  maximum: 1000,
-                                  contentPadding: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 0.0, 12.0, 0.0),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 4.0, 0.0),
-                                child: Text(
-                                  ' Piezas',
-                                  style: FlutterFlowTheme.of(context)
-                                      .titleMedium
-                                      .override(
-                                        font: GoogleFonts.interTight(
-                                            fontWeight: FontWeight.w500),
-                                        fontSize: 15.0,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        // Use Weight Controls (Kilos + Grams)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Kilos
-                            Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 5.0),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Container(
-                                    width: 90.0,
-                                    height: 40.0,
-                                    decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryBackground,
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    child: FlutterFlowCountController(
-                                      decrementIconBuilder: (enabled) => Icon(
-                                        Icons.remove_rounded,
-                                        color: enabled
-                                            ? FlutterFlowTheme.of(context)
-                                                .secondaryText
-                                            : Color(0xFFFF0000),
-                                        size: 15.0,
-                                      ),
-                                      incrementIconBuilder: (enabled) => Icon(
-                                        Icons.add_rounded,
-                                        color: enabled
-                                            ? Color(0xFF006701)
-                                            : Color(0xFFFF0000),
-                                        size: 15.0,
-                                      ),
-                                      countBuilder: (count) => Text(
-                                        count.toString(),
-                                        style: FlutterFlowTheme.of(context)
-                                            .titleLarge
-                                            .override(
-                                              font: GoogleFonts.interTight(),
-                                              fontSize: 15.0,
-                                            ),
-                                      ),
-                                      count: _model.kiloscounterValue ??=
-                                          _model.kilosInt!,
-                                      updateCount: (count) async {
-                                        safeSetState(() =>
-                                            _model.kiloscounterValue = count);
-                                        _model.kilosInt =
-                                            _model.kiloscounterValue;
-                                        safeSetState(() {});
-                                      },
-                                      stepSize: 1,
-                                      minimum: 0,
-                                      maximum: 10000000,
-                                      contentPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              12.0, 0.0, 12.0, 0.0),
-                                    ),
-                                  ),
-                                  Text(
-                                    ' Kilos',
-                                    style: FlutterFlowTheme.of(context)
-                                        .titleMedium
-                                        .override(
-                                          font: GoogleFonts.interTight(
-                                              fontWeight: FontWeight.w500),
-                                          fontSize: 15.0,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Grams
-                            Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 5.0),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Container(
-                                    width: 90.0,
-                                    height: 40.0,
-                                    decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryBackground,
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    child: FlutterFlowCountController(
-                                      decrementIconBuilder: (enabled) => Icon(
-                                        Icons.remove_rounded,
-                                        color: enabled
-                                            ? FlutterFlowTheme.of(context)
-                                                .secondaryText
-                                            : Color(0xFFFF0000),
-                                        size: 15.0,
-                                      ),
-                                      incrementIconBuilder: (enabled) => Icon(
-                                        Icons.add_rounded,
-                                        color: enabled
-                                            ? Color(0xFF006701)
-                                            : Color(0xFFFF0000),
-                                        size: 15.0,
-                                      ),
-                                      countBuilder: (count) => Text(
-                                        count.toString(),
-                                        style: FlutterFlowTheme.of(context)
-                                            .titleLarge
-                                            .override(
-                                              font: GoogleFonts.interTight(),
-                                              fontSize: 15.0,
-                                            ),
-                                      ),
-                                      count: _model.gramscounterValue ??=
-                                          _model.gramsint!,
-                                      updateCount: (count) async {
-                                        safeSetState(() =>
-                                            _model.gramscounterValue = count);
-                                        _model.gramsint =
-                                            _model.gramscounterValue;
-                                        safeSetState(() {});
-                                      },
-                                      stepSize: 100,
-                                      minimum: 0,
-                                      maximum: 10000000,
-                                      contentPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              12.0, 0.0, 12.0, 0.0),
-                                    ),
-                                  ),
-                                  Text(
-                                    ' gramos',
-                                    style: FlutterFlowTheme.of(context)
-                                        .titleMedium
-                                        .override(
-                                          font: GoogleFonts.interTight(
-                                              fontWeight: FontWeight.w500),
-                                          fontSize: 15.0,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                  // Product name
+                  Text(
+                    widget.productname ?? 'Producto',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.interTight(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _kText,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
 
-                      // ADD TO CART BUTTON
-                      FFButtonWidget(
-                        onPressed: () async {
-                          // CHECK AUTHENTICATION FIRST
-                          if (!loggedIn) {
-                            // Show message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Inicia sesión para agregar productos al carrito',
-                                  style: FlutterFlowTheme.of(context)
-                                      .headlineMedium
-                                      .override(
-                                        font: GoogleFonts.interTight(),
-                                        color: FlutterFlowTheme.of(context).primary,
-                                        fontSize: 15.0,
-                                      ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                duration: Duration(milliseconds: 3000),
-                                backgroundColor: Color(0xFFFFA726),
-                              ),
-                            );
-                            
-                            // Navigate to login page
-                            await Future.delayed(Duration(milliseconds: 500));
-                            context.pushNamed(LogginWidget.routeName);
-                            return;
-                          }
+                  // Price per unit
+                  Text(
+                    '\$${(widget.price ?? 0).toStringAsFixed(2)} / $_unitLabel',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: _kMuted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
 
-                          // QUERY EXISTING
-                          _model.existingItem = await queryCartRecordOnce(
-                            queryBuilder: (cartRecord) => cartRecord
-                                .where(
-                                  'productRef',
-                                  isEqualTo: widget.productRef,
-                                )
-                                .where(
-                                  'userRef',
-                                  isEqualTo: currentUserReference,
-                                ),
-                            singleRecord: true,
-                          ).then((s) => s.firstOrNull);
+                  // Unit selector tabs
+                  if (_availableUnits.length > 1) ...[
+                    _buildUnitTabs(),
+                    const SizedBox(height: 6),
+                  ],
 
-                          if (_isPieceType) {
-                            // PIECES LOGIC
-                            if (_model.existingItem?.reference != null) {
-                              await _model.existingItem!.reference
-                                  .update(createCartRecordData(
-                                grams: _model.existingItem!.grams +
-                                    _model.pieces!.toDouble(),
-                                unitPrice: (widget.price!) *
-                                    (_model.existingItem!.grams +
-                                        _model.pieces!.toDouble()),
-                              ));
-                            } else {
-                              await CartRecord.collection
-                                  .doc()
-                                  .set(createCartRecordData(
-                                    productRef: widget.productRef,
-                                    productName: widget.productname,
-                                    createdAt: getCurrentTimestamp,
-                                    coverimage: widget.coverimage,
-                                    grams: _model.pieces?.toDouble(),
-                                    unitPrice: (widget.price!) *
-                                        _model.pieces!.toDouble(),
-                                    userRef: currentUserReference,
-                                    unitType: 'Piezas',
-                                    pricePerKg: widget.price, // Store 'unit price' here for pieces too? Productcard uses it.
-                                  ));
-                            }
-                            // Reset Pieces
-                            _model.pieces = 1;
-                            safeSetState(() => _model.countControlPiecesValue = 1);
+                  // Quantity counter
+                  _buildCounter(),
 
-                          } else {
-                            // WEIGHT LOGIC
-                            final double totalKilosInCart = 
-                              (_model.kilosInt! * 1000 + _model.gramsint!) / 1000.0;
-                            final double totalGramsToAdd = 
-                              (_model.kilosInt! * 1000 + _model.gramsint!).toDouble();
+                  const SizedBox(height: 8),
 
-                            if (_model.existingItem?.reference != null) {
-                              // Existing text in ProductcardWidget was:
-                              // grams: ((_model.kilosInt!) * 1000) + _model.existingItem!.grams + _model.gramsint!.toDouble()
-                              // This assumes kilosInt is just the NEW amount.
-                              // Correct.
-                              
-                              await _model.existingItem!.reference
-                                  .update(createCartRecordData(
-                                grams: _model.existingItem!.grams + totalGramsToAdd,
-                                unitPrice: (widget.price!) *
-                                    (_model.existingItem!.grams + totalGramsToAdd) / 1000.0,
-                              ));
-                            } else {
-                              await CartRecord.collection
-                                  .doc()
-                                  .set(createCartRecordData(
-                                    productRef: widget.productRef,
-                                    productName: widget.productname,
-                                    pricePerKg: widget.price,
-                                    unitType: 'Gramos',
-                                    createdAt: getCurrentTimestamp,
-                                    coverimage: widget.coverimage,
-                                    grams: totalGramsToAdd,
-                                    unitPrice: (widget.price!) * totalKilosInCart,
-                                    userRef: currentUserReference,
-                                  ));
-                            }
-                            
-                            // Reset Weight
-                            _model.gramsint = 0;
-                            _model.kilosInt = 1;
-                            safeSetState(() {
-                               _model.kiloscounterValue = 1;
-                               _model.gramscounterValue = 0;
-                            });
-                          }
-
-                          safeSetState(() {});
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Agregado al Carrito',
-                                style: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .override(
-                                      font: GoogleFonts.interTight(),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      fontSize: 15.0,
-                                    ),
-                                textAlign: TextAlign.center,
-                              ),
-                              duration: Duration(milliseconds: 3550),
-                              backgroundColor: Color(0xFFCBE4FC),
-                            ),
-                          );
-                        },
-                        text: 'Agregar al carrito',
-                        options: FFButtonOptions(
-                          height: 31.2,
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 0.0),
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          textStyle:
-                              FlutterFlowTheme.of(context).titleSmall.override(
-                                    font: GoogleFonts.interTight(),
-                                    color: Colors.white,
-                                  ),
-                          elevation: 0.0,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ],
-                  ),),
+                  // Add to cart button
+                  _buildAddButton(),
                 ],
               ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  UNIT TABS
+  // ─────────────────────────────────────────────────────────
+  Widget _buildUnitTabs() {
+    return Row(
+      children: _availableUnits.asMap().entries.map((entry) {
+        final i = entry.key;
+        final unit = entry.value;
+        final isSelected = _model.selectedUnit == unit;
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => _selectUnit(unit),
+            child: Container(
+              margin: EdgeInsets.only(right: i < _availableUnits.length - 1 ? 6 : 0),
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              decoration: BoxDecoration(
+                color: isSelected ? _kGreenLight : Colors.white,
+                border: Border.all(
+                  color: isSelected ? _kGreen : _kBorder,
+                  width: isSelected ? 1.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                unit,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight:
+                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? _kGreen : _kMuted,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  QUANTITY COUNTER
+  // ─────────────────────────────────────────────────────────
+  Widget _buildCounter() {
+    return Container(
+      height: 36,
+      decoration: BoxDecoration(
+        border: Border.all(color: _kBorder),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          // Decrement
+          GestureDetector(
+            onTap: _decrement,
+            child: Container(
+              width: 34,
+              height: 36,
+              alignment: Alignment.center,
+              child: const Icon(Icons.remove_rounded,
+                  size: 16, color: Color(0xFFEF5350)),
+            ),
+          ),
+          // Divider
+          Container(width: 1, height: 20, color: _kBorder),
+          // Value
+          Expanded(
+            child: Text(
+              _formatQuantity(),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.interTight(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: _kText,
+              ),
+            ),
+          ),
+          // Divider
+          Container(width: 1, height: 20, color: _kBorder),
+          // Increment
+          GestureDetector(
+            onTap: _increment,
+            child: Container(
+              width: 34,
+              height: 36,
+              alignment: Alignment.center,
+              child: const Icon(Icons.add_rounded,
+                  size: 16, color: _kGreen),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  ADD TO CART BUTTON
+  // ─────────────────────────────────────────────────────────
+  Widget _buildAddButton() {
+    return GestureDetector(
+      onTap: _model.isAddingToCart ? null : _addToCart,
+      child: Container(
+        width: double.infinity,
+        height: 36,
+        decoration: BoxDecoration(
+          color: _model.isAddingToCart
+              ? _kGreen.withOpacity(0.6)
+              : _kGreen,
+          borderRadius: BorderRadius.circular(10),
         ),
-      ).animateOnPageLoad(animationsMap['containerOnPageLoadAnimation']!),
+        child: _model.isAddingToCart
+            ? const Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Agregar',
+                    style: GoogleFonts.interTight(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.shopping_cart_outlined,
+                      color: Colors.white, size: 15),
+                ],
+              ),
+      ),
     );
   }
 }
