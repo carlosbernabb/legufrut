@@ -3,6 +3,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/components/universal_product_card_widget.dart';
+import '/components/whatsapp_fab_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/upload_data.dart';
@@ -295,6 +296,11 @@ class _HomePageWidgetState extends State<HomePageWidget>
                         ],
                       ],
                     ),
+                  ),
+                  const Positioned(
+                    bottom: 8,
+                    right: 16,
+                    child: WhatsAppFabWidget(),
                   ),
                   if (FFAppState().showPopup == true)
                     _buildPopupOverlay(context),

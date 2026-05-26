@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
 
@@ -21,6 +22,21 @@ void main() async {
   usePathUrlStrategy();
 
   await initFirebase();
+
+  // Seed whatsapp_number in app_config if not set yet
+  try {
+    final configDocs = await FirebaseFirestore.instance
+        .collection('app_config')
+        .limit(1)
+        .get();
+    if (configDocs.docs.isNotEmpty) {
+      final doc = configDocs.docs.first;
+      if (doc.data()['whatsapp_number'] == null ||
+          (doc.data()['whatsapp_number'] as String).isEmpty) {
+        await doc.reference.update({'whatsapp_number': '4471110858'});
+      }
+    }
+  } catch (_) {}
 
   await FlutterFlowTheme.initialize();
 
@@ -115,6 +131,7 @@ class _MyAppState extends State<MyApp> {
       ),
       themeMode: ThemeMode.light,
       routerConfig: _router,
+      builder: (context, child) => child ?? const SizedBox.shrink(),
     );
   }
 }

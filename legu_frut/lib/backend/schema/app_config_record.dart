@@ -56,6 +56,11 @@ class AppConfigRecord extends FirestoreRecord {
   String get driver3Email => _driver3Email ?? '';
   bool hasDriver3Email() => _driver3Email != null;
 
+  // "whatsapp_number" field.
+  String? _whatsappNumber;
+  String get whatsappNumber => _whatsappNumber ?? '';
+  bool hasWhatsappNumber() => _whatsappNumber != null;
+
   void _initializeFields() {
     _popupEnabled = snapshotData['popup_enabled'] as bool?;
     _popupTitle = snapshotData['popup_title'] as String?;
@@ -65,6 +70,7 @@ class AppConfigRecord extends FirestoreRecord {
     _driver1Email = snapshotData['driver1_email'] as String?;
     _driver2Email = snapshotData['driver2_email'] as String?;
     _driver3Email = snapshotData['driver3_email'] as String?;
+    _whatsappNumber = snapshotData['whatsapp_number'] as String?;
   }
 
   static CollectionReference get collection =>
