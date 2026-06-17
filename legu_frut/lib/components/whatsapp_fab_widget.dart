@@ -6,6 +6,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class WhatsAppFabWidget extends StatelessWidget {
   const WhatsAppFabWidget({super.key});
 
+  static const _fallbackNumber = '4471110858';
+
   Future<void> _openWhatsApp(String number) async {
     final cleanNumber = number.replaceAll(RegExp(r'\D'), '');
     final fullNumber = cleanNumber.startsWith('52')
@@ -27,13 +29,16 @@ class WhatsAppFabWidget extends StatelessWidget {
           .limit(1)
           .snapshots(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const SizedBox.shrink();
+        var phone = _fallbackNumber;
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          final data =
+              snapshot.data!.docs.first.data() as Map<String, dynamic>;
+          final configuredPhone =
+              (data['whatsapp_number'] as String? ?? '').trim();
+          if (configuredPhone.isNotEmpty) {
+            phone = configuredPhone;
+          }
         }
-        final data =
-            snapshot.data!.docs.first.data() as Map<String, dynamic>;
-        final phone = (data['whatsapp_number'] as String? ?? '').trim();
-        if (phone.isEmpty) return const SizedBox.shrink();
 
         return GestureDetector(
           onTap: () => _openWhatsApp(phone),

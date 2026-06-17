@@ -669,6 +669,44 @@ class _LogginWidgetState extends State<LogginWidget>
                                                           0.0, 0.0, 0.0, 16.0),
                                                   child: FFButtonWidget(
                                                     onPressed: () async {
+                                                      final email = _model
+                                                          .emailAddressTextController
+                                                          .text
+                                                          .trim();
+                                                      final password = _model
+                                                          .passwordTextController
+                                                          .text;
+                                                      if (email.isEmpty ||
+                                                          password.isEmpty) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Ingresa correo y contraseña.',
+                                                            ),
+                                                            backgroundColor:
+                                                                const Color(
+                                                                    0xFFB71C1C),
+                                                            behavior:
+                                                                SnackBarBehavior
+                                                                    .floating,
+                                                            margin:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        16,
+                                                                    vertical:
+                                                                        12),
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10)),
+                                                          ),
+                                                        );
+                                                        return;
+                                                      }
                                                       GoRouter.of(context)
                                                           .prepareAuthEvent();
 
@@ -676,12 +714,8 @@ class _LogginWidgetState extends State<LogginWidget>
                                                           await authManager
                                                               .signInWithEmail(
                                                         context,
-                                                        _model
-                                                            .emailAddressTextController
-                                                            .text,
-                                                        _model
-                                                            .passwordTextController
-                                                            .text,
+                                                        email,
+                                                        password,
                                                       );
                                                       if (user == null) {
                                                         return;
@@ -1805,14 +1839,57 @@ class _LogginWidgetState extends State<LogginWidget>
                                                           0.0, 0.0, 0.0, 16.0),
                                                   child: FFButtonWidget(
                                                     onPressed: () async {
-                                                      GoRouter.of(context)
-                                                          .prepareAuthEvent();
-                                                      if (_model
-                                                              .passwordCreateTextController
-                                                              .text !=
+                                                      final name = _model
+                                                          .nameTextController
+                                                          .text
+                                                          .trim();
+                                                      final email = _model
+                                                          .emailAddressCreateTextController
+                                                          .text
+                                                          .trim();
+                                                      final password = _model
+                                                          .passwordCreateTextController
+                                                          .text;
+                                                      final confirmPassword =
                                                           _model
                                                               .passwordConfirmTextController
-                                                              .text) {
+                                                              .text;
+                                                      if (name.isEmpty ||
+                                                          email.isEmpty ||
+                                                          password.isEmpty ||
+                                                          confirmPassword
+                                                              .isEmpty) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Completa nombre, correo y contraseña.',
+                                                            ),
+                                                            backgroundColor:
+                                                                const Color(
+                                                                    0xFFB71C1C),
+                                                            behavior:
+                                                                SnackBarBehavior
+                                                                    .floating,
+                                                            margin:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        16,
+                                                                    vertical:
+                                                                        12),
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10)),
+                                                          ),
+                                                        );
+                                                        return;
+                                                      }
+                                                      if (password !=
+                                                          confirmPassword) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
@@ -1838,16 +1915,14 @@ class _LogginWidgetState extends State<LogginWidget>
                                                         );
                                                         return;
                                                       }
+                                                      GoRouter.of(context)
+                                                          .prepareAuthEvent();
 
                                                       final user = await authManager
                                                           .createAccountWithEmail(
                                                         context,
-                                                        _model
-                                                            .emailAddressCreateTextController
-                                                            .text,
-                                                        _model
-                                                            .passwordCreateTextController
-                                                            .text,
+                                                        email,
+                                                        password,
                                                       );
                                                       if (user == null) {
                                                         return;
@@ -1858,12 +1933,8 @@ class _LogginWidgetState extends State<LogginWidget>
                                                           .doc(user.uid)
                                                           .update(
                                                               createUsersRecordData(
-                                                            email: _model
-                                                                .emailAddressTextController
-                                                                .text,
-                                                            displayName: _model
-                                                                .nameTextController
-                                                                .text,
+                                                            email: email,
+                                                            displayName: name,
                                                           ));
 
                                                       context.goNamedAuth(

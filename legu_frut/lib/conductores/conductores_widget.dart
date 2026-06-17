@@ -70,7 +70,13 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
         .limit(1)
         .snapshots()
         .listen((snap) {
-      if (snap.docs.isEmpty) return;
+      if (snap.docs.isEmpty) {
+        safeSetState(() {
+          _appConfigRef =
+              FirebaseFirestore.instance.collection('app_config').doc('default');
+        });
+        return;
+      }
       final doc = snap.docs.first;
       final data = doc.data();
       final e1 = (data['driver1_email'] ?? '') as String;
@@ -196,7 +202,8 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
   }
 
   Future<void> _saveDriver(int driverNum) async {
-    if (_appConfigRef == null) return;
+    _appConfigRef ??=
+        FirebaseFirestore.instance.collection('app_config').doc('default');
     final newEmail = _emailCtrl.text.trim().toLowerCase();
 
     safeSetState(() {
@@ -241,7 +248,10 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
       }
 
       // Save email to app_config
-      await _appConfigRef!.update({'driver${driverNum}_email': newEmail});
+      await _appConfigRef!.set(
+        {'driver${driverNum}_email': newEmail},
+        SetOptions(merge: true),
+      );
 
       safeSetState(() {
         _editingDriver = null;

@@ -316,22 +316,35 @@ class FirebaseAuthManager extends AuthManager
     } on FirebaseAuthException catch (e) {
       final errorMsg = switch (e.code) {
         'email-already-in-use' =>
-          'Ya existe una cuenta con ese correo electrónico.',
+          'Ya existe una cuenta con ese correo electronico.',
+        'account-exists-with-different-credential' =>
+          'Este correo ya existe con otro metodo de inicio de sesion.',
+        'credential-already-in-use' =>
+          'Esta cuenta de Apple ya esta vinculada a otro usuario.',
         'INVALID_LOGIN_CREDENTIALS' ||
         'wrong-password' ||
         'user-not-found' =>
-          'Correo o contraseña incorrectos. Revisa tus datos e intenta de nuevo.',
-        'invalid-email' => 'El formato del correo no es válido.',
+          'Correo o contrasena incorrectos. Revisa tus datos e intenta de nuevo.',
+        'invalid-email' => 'El formato del correo no es valido.',
+        'invalid-credential' || 'missing-or-invalid-nonce' =>
+          authProvider == 'APPLE'
+              ? 'No pudimos validar la cuenta de Apple. Intenta de nuevo.'
+              : 'Las credenciales no son validas. Intenta de nuevo.',
+        'operation-not-allowed' => authProvider == 'APPLE'
+            ? 'El inicio con Apple no esta activo en Firebase.'
+            : 'Este metodo de inicio de sesion no esta activo.',
         'too-many-requests' =>
           'Demasiados intentos fallidos. Espera unos minutos e intenta de nuevo.',
         'network-request-failed' =>
-          'Sin conexión a internet. Verifica tu red e intenta de nuevo.',
+          'Sin conexion a internet. Verifica tu red e intenta de nuevo.',
         'user-disabled' => 'Esta cuenta ha sido desactivada.',
         'requires-recent-login' =>
-          'Por seguridad, vuelve a iniciar sesión para continuar.',
+          'Por seguridad, vuelve a iniciar sesion para continuar.',
         'weak-password' =>
-          'La contraseña es muy débil. Usa al menos 6 caracteres.',
-        _ => 'Algo salió mal. Intenta de nuevo.',
+          'La contrasena es muy debil. Usa al menos 6 caracteres.',
+        _ => authProvider == 'APPLE'
+            ? 'No se pudo iniciar sesion con Apple. Intenta de nuevo.'
+            : 'Algo salio mal. Intenta de nuevo.',
       };
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
