@@ -66,6 +66,11 @@ class OrdersRecord extends FirestoreRecord {
   double get shippingFee => _shippingFee ?? 0.0;
   bool hasShippingFee() => _shippingFee != null;
 
+  // "distanceKm" field. (Distancia de manejo desde la central, en km)
+  double? _distanceKm;
+  double get distanceKm => _distanceKm ?? 0.0;
+  bool hasDistanceKm() => _distanceKm != null;
+
   // "total" field.
   double? _total;
   double get total => _total ?? 0.0;
@@ -126,6 +131,16 @@ class OrdersRecord extends FirestoreRecord {
   String get cancelReason => _cancelReason ?? '';
   bool hasCancelReason() => _cancelReason != null;
 
+  // "paymentMethod" field. ('Efectivo' | 'Tarjeta')
+  String? _paymentMethod;
+  String get paymentMethod => _paymentMethod ?? 'Efectivo';
+  bool hasPaymentMethod() => _paymentMethod != null;
+
+  // "paymentStatus" field. ('Por cobrar' | 'Esperando pago' | 'Pagado')
+  String? _paymentStatus;
+  String get paymentStatus => _paymentStatus ?? '';
+  bool hasPaymentStatus() => _paymentStatus != null;
+
   void _initializeFields() {
     _userRef = snapshotData['userRef'] as DocumentReference?;
     _createdAt = snapshotData['createdAt'] as DateTime?;
@@ -137,6 +152,7 @@ class OrdersRecord extends FirestoreRecord {
     _referenceNote = snapshotData['referenceNote'] as String?;
     _subtotal = castToType<double>(snapshotData['subtotal']);
     _shippingFee = castToType<double>(snapshotData['shippingFee']);
+    _distanceKm = castToType<double>(snapshotData['distanceKm']);
     _total = castToType<double>(snapshotData['total']);
     _location = snapshotData['location'] as LatLng?;
     _fullAddress = snapshotData['fullAddress'] as String?;
@@ -149,6 +165,8 @@ class OrdersRecord extends FirestoreRecord {
     _userToken = snapshotData['userToken'] as String?;
     _confirmedTotal = castToType<double>(snapshotData['confirmedTotal']);
     _cancelReason = snapshotData['cancelReason'] as String?;
+    _paymentMethod = snapshotData['paymentMethod'] as String?;
+    _paymentStatus = snapshotData['paymentStatus'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -195,6 +213,7 @@ Map<String, dynamic> createOrdersRecordData({
   String? referenceNote,
   double? subtotal,
   double? shippingFee,
+  double? distanceKm,
   double? total,
   LatLng? location,
   String? fullAddress,
@@ -207,6 +226,8 @@ Map<String, dynamic> createOrdersRecordData({
   String? userToken,
   double? confirmedTotal,
   String? cancelReason,
+  String? paymentMethod,
+  String? paymentStatus,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -220,6 +241,7 @@ Map<String, dynamic> createOrdersRecordData({
       'referenceNote': referenceNote,
       'subtotal': subtotal,
       'shippingFee': shippingFee,
+      'distanceKm': distanceKm,
       'total': total,
       'location': location,
       'fullAddress': fullAddress,
@@ -232,6 +254,8 @@ Map<String, dynamic> createOrdersRecordData({
       'userToken': userToken,
       'confirmedTotal': confirmedTotal,
       'cancelReason': cancelReason,
+      'paymentMethod': paymentMethod,
+      'paymentStatus': paymentStatus,
     }.withoutNulls,
   );
 

@@ -1,3 +1,4 @@
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ class _AdminHubWidgetState extends State<AdminHubWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => AdminHubModel());
+    actions.enforceRole(context);
   }
 
   @override
@@ -138,8 +140,8 @@ class _AdminHubWidgetState extends State<AdminHubWidget> {
                         'Agrega nuevos productos, busca y edita precios de tu inventario por categoría.',
                     tag: 'Inventario',
                     tagColor: _kGreen,
-                    onTap: () => context
-                        .pushNamed(AdmincreateproductWidget.routeName),
+                    onTap: () =>
+                        context.pushNamed(AdmincreateproductWidget.routeName),
                   ),
                   const SizedBox(height: 16),
                   _buildCard(
@@ -177,8 +179,7 @@ class _AdminHubWidgetState extends State<AdminHubWidget> {
                         'Asigna conductores por correo, monitorea sus pedidos activos y paradas pendientes en tiempo real.',
                     tag: 'Repartos',
                     tagColor: Color(0xFF00695C),
-                    onTap: () =>
-                        context.pushNamed(ConductoresWidget.routeName),
+                    onTap: () => context.pushNamed(ConductoresWidget.routeName),
                   ),
                   const SizedBox(height: 16),
                   _buildCard(

@@ -1,4 +1,5 @@
 import '/backend/backend.dart';
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
   void initState() {
     super.initState();
     _model = createModel(context, () => OrdenesAdminModel());
+    actions.enforceRole(context);
     _model.tabBarController = TabController(vsync: this, length: 3)
       ..addListener(() => safeSetState(() {}));
   }
@@ -81,8 +83,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancelar',
-                style: GoogleFonts.inter(color: _kMuted)),
+            child: Text('Cancelar', style: GoogleFonts.inter(color: _kMuted)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -173,7 +174,6 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
                       .orderBy('createdAt', descending: true),
                   tabType: _TabType.entregado,
                 ),
-
               ],
             ),
           ),
@@ -194,8 +194,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
       ),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Center(
-              child: CircularProgressIndicator(color: _kGreen));
+          return const Center(child: CircularProgressIndicator(color: _kGreen));
         }
 
         final orders = snapshot.data!;
@@ -206,8 +205,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           itemCount: orders.length,
-          itemBuilder: (context, i) =>
-              _buildOrderCard(orders[i], tabType),
+          itemBuilder: (context, i) => _buildOrderCard(orders[i], tabType),
         );
       },
     );
@@ -215,9 +213,18 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
 
   Widget _buildEmpty(_TabType tabType) {
     final labels = {
-      _TabType.pendiente: ('Sin órdenes pendientes', Icons.pending_actions_outlined),
-      _TabType.preparando: ('Sin órdenes en preparación', Icons.local_shipping_outlined),
-      _TabType.entregado: ('Sin órdenes entregadas', Icons.check_circle_outline),
+      _TabType.pendiente: (
+        'Sin órdenes pendientes',
+        Icons.pending_actions_outlined
+      ),
+      _TabType.preparando: (
+        'Sin órdenes en preparación',
+        Icons.local_shipping_outlined
+      ),
+      _TabType.entregado: (
+        'Sin órdenes entregadas',
+        Icons.check_circle_outline
+      ),
     };
     final (text, icon) = labels[tabType]!;
     return Center(
@@ -226,8 +233,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
         children: [
           Icon(icon, color: _kBorder, size: 56),
           const SizedBox(height: 12),
-          Text(text,
-              style: GoogleFonts.inter(color: _kMuted, fontSize: 15)),
+          Text(text, style: GoogleFonts.inter(color: _kMuted, fontSize: 15)),
         ],
       ),
     );
@@ -295,8 +301,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
                               width: 7,
                               height: 7,
                               decoration: BoxDecoration(
-                                  color: statusColor,
-                                  shape: BoxShape.circle),
+                                  color: statusColor, shape: BoxShape.circle),
                             ),
                             const SizedBox(width: 5),
                             Text(
@@ -326,8 +331,8 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
                           const SizedBox(width: 8),
                           Text(
                             '···',
-                            style: GoogleFonts.inter(
-                                color: _kMuted, fontSize: 12),
+                            style:
+                                GoogleFonts.inter(color: _kMuted, fontSize: 12),
                           ),
                         ],
                       ),
@@ -338,8 +343,8 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
                             order.nombrecliente,
-                            style: GoogleFonts.inter(
-                                fontSize: 13, color: _kMuted),
+                            style:
+                                GoogleFonts.inter(fontSize: 13, color: _kMuted),
                           ),
                         ),
 
@@ -353,14 +358,20 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
                                   size: 12, color: _kMuted),
                               const SizedBox(width: 3),
                               Text(
-                                dateTimeFormat('d MMM, HH:mm',
-                                    order.createdAt!),
+                                dateTimeFormat(
+                                    'd MMM, HH:mm', order.createdAt!),
                                 style: GoogleFonts.inter(
                                     fontSize: 12, color: _kMuted),
                               ),
                             ],
                           ),
                         ),
+
+                      // Payment method chip
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5),
+                        child: _paymentChip(order),
+                      ),
                     ],
                   ),
                 ),
@@ -380,8 +391,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
                     if (order.shippingFee > 0)
                       Text(
                         '+ \$${order.shippingFee.toStringAsFixed(2)} envío',
-                        style: GoogleFonts.inter(
-                            fontSize: 11, color: _kMuted),
+                        style: GoogleFonts.inter(fontSize: 11, color: _kMuted),
                       ),
                     const SizedBox(height: 8),
                     Row(
@@ -416,10 +426,8 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
                               color: _kRed.withOpacity(0.08),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(
-                                Icons.delete_outline_rounded,
-                                color: _kRed,
-                                size: 18),
+                            child: const Icon(Icons.delete_outline_rounded,
+                                color: _kRed, size: 18),
                           ),
                         ),
                       ],
@@ -431,8 +439,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
           ),
 
           // ── Driver info (Preparando/Entregado) ─────────────
-          if (tabType != _TabType.pendiente &&
-              order.driverTag.isNotEmpty) ...[
+          if (tabType != _TabType.pendiente && order.driverTag.isNotEmpty) ...[
             const Divider(height: 1, color: _kBorder),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
@@ -589,11 +596,9 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
                           padding: EdgeInsets.only(
                               right: i < _drivers.length - 1 ? 8 : 0),
                           child: GestureDetector(
-                            onTap: () =>
-                                _assignDriver(order, _drivers[i]),
+                            onTap: () => _assignDriver(order, _drivers[i]),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 9),
+                              padding: const EdgeInsets.symmetric(vertical: 9),
                               decoration: BoxDecoration(
                                 color: _driverColors[i],
                                 borderRadius: BorderRadius.circular(10),
@@ -619,8 +624,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
           ],
 
           // ── Bottom padding for Preparando/Entregado ─────────
-          if (tabType != _TabType.pendiente)
-            const SizedBox(height: 4),
+          if (tabType != _TabType.pendiente) const SizedBox(height: 4),
         ],
       ),
     );
@@ -704,9 +708,7 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
             child: Text(
               label,
               style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: _kText),
+                  fontSize: 12, fontWeight: FontWeight.w600, color: _kText),
             ),
           ),
           Expanded(
@@ -716,6 +718,71 @@ class _OrdenesAdminWidgetState extends State<OrdenesAdminWidget>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Chip que indica cómo paga el cliente (efectivo o tarjeta) y su estado.
+  /// En pedidos con tarjeta, el admin puede tocarlo para marcar el pago como
+  /// recibido (tras confirmarlo en su app de Mercado Pago).
+  Widget _paymentChip(OrdersRecord order) {
+    final isCard = order.paymentMethod == 'Tarjeta';
+    final paid = order.paymentStatus == 'Pagado';
+    final color = isCard
+        ? (paid ? const Color(0xFF2E7D32) : const Color(0xFF009EE3))
+        : const Color(0xFFE65100);
+    final label = isCard
+        ? (paid ? 'Tarjeta · Pagado' : 'Tarjeta · Esperando pago')
+        : 'Efectivo · Por cobrar';
+    return GestureDetector(
+      onTap: isCard
+          ? () async {
+              final newStatus = paid ? 'Esperando pago' : 'Pagado';
+              await order.reference.update({'paymentStatus': newStatus});
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(newStatus == 'Pagado'
+                      ? 'Pedido marcado como pagado ✓'
+                      : 'Pedido marcado como esperando pago'),
+                  backgroundColor: _kDarkGreen,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              );
+            }
+          : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: isCard ? Border.all(color: color.withOpacity(0.4)) : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isCard ? Icons.credit_card_rounded : Icons.payments_rounded,
+              size: 12,
+              color: color,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+            if (isCard && !paid) ...[
+              const SizedBox(width: 4),
+              Icon(Icons.touch_app_rounded, size: 11, color: color),
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/upload_data.dart';
 import '/index.dart';
@@ -97,12 +98,7 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => AdmincreateproductModel());
-
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (!valueOrDefault<bool>(currentUserDocument?.isadmin, false)) {
-        context.pushNamed(HomePageWidget.routeName);
-      }
-    });
+    actions.enforceRole(context);
 
     _model.nameController = TextEditingController();
     _model.nameFocusNode = FocusNode();
@@ -184,7 +180,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Eliminar producto',
             style: GoogleFonts.interTight(fontWeight: FontWeight.w700)),
-        content: Text('¿Eliminar "${product.name}"? Esta acción no se puede deshacer.',
+        content: Text(
+            '¿Eliminar "${product.name}"? Esta acción no se puede deshacer.',
             style: GoogleFonts.inter(color: _kMuted)),
         actions: [
           TextButton(
@@ -194,7 +191,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text('Eliminar',
-                style: GoogleFonts.inter(color: _kRed, fontWeight: FontWeight.w700)),
+                style: GoogleFonts.inter(
+                    color: _kRed, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -318,13 +316,15 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.receipt_long_outlined, color: Colors.white),
+                  icon: const Icon(Icons.receipt_long_outlined,
+                      color: Colors.white),
                   tooltip: 'Ver Órdenes',
                   onPressed: () =>
                       context.pushNamed(OrdenesAdminWidget.routeName),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.campaign_outlined, color: Colors.white),
+                  icon:
+                      const Icon(Icons.campaign_outlined, color: Colors.white),
                   tooltip: 'Enviar Alerta',
                   onPressed: () =>
                       context.pushNamed(RecuadroAlertaWidget.routeName),
@@ -379,8 +379,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                 ),
               ),
               onPressed: () {
-                safeSetState(
-                    () => _model.isNewProductExpanded = !_model.isNewProductExpanded);
+                safeSetState(() =>
+                    _model.isNewProductExpanded = !_model.isNewProductExpanded);
                 if (_model.isNewProductExpanded) {
                   Future.delayed(const Duration(milliseconds: 100), () {
                     _model.nameFocusNode?.requestFocus();
@@ -401,7 +401,10 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 2)),
         ],
       ),
       child: TextField(
@@ -436,7 +439,10 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -444,8 +450,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
           // Header
           InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: () => safeSetState(
-                () => _model.isNewProductExpanded = !_model.isNewProductExpanded),
+            onTap: () => safeSetState(() =>
+                _model.isNewProductExpanded = !_model.isNewProductExpanded),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
               child: Row(
@@ -553,8 +559,7 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                             fontWeight: FontWeight.w500)),
                     const Spacer(),
                     Text('(fijo para esta categoría)',
-                        style:
-                            GoogleFonts.inter(fontSize: 11, color: _kMuted)),
+                        style: GoogleFonts.inter(fontSize: 11, color: _kMuted)),
                   ],
                 ),
               )
@@ -577,7 +582,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
               controller: _model.priceController!,
               focusNode: _model.priceFocusNode!,
               hint: '0.00',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Precio requerido';
                 if (double.tryParse(v) == null) return 'Número inválido';
@@ -611,7 +617,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                 ),
                 child: _model.isDataUploading
                     ? const Center(
-                        child: CircularProgressIndicator(color: _kGreen, strokeWidth: 2))
+                        child: CircularProgressIndicator(
+                            color: _kGreen, strokeWidth: 2))
                     : _model.uploadedFileUrl.isNotEmpty
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(12),
@@ -625,8 +632,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                   color: _kMuted, size: 28),
                               const SizedBox(height: 4),
                               Text('Seleccionar imagen',
-                                  style:
-                                      GoogleFonts.inter(color: _kMuted, fontSize: 12)),
+                                  style: GoogleFonts.inter(
+                                      color: _kMuted, fontSize: 12)),
                             ],
                           ),
               ),
@@ -678,7 +685,10 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -718,9 +728,11 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: products.isEmpty ? _kBorder : color.withOpacity(0.12),
+                      color:
+                          products.isEmpty ? _kBorder : color.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -765,9 +777,7 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                                 ? Icons.visibility_rounded
                                 : Icons.visibility_off_rounded,
                             size: 16,
-                            color: enabled
-                                ? const Color(0xFF795548)
-                                : _kMuted,
+                            color: enabled ? const Color(0xFF795548) : _kMuted,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -796,8 +806,7 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                             value: enabled,
                             onChanged: (v) async {
                               await config.reference.update(
-                                  createAppConfigRecordData(
-                                      carnasEnabled: v));
+                                  createAppConfigRecordData(carnasEnabled: v));
                             },
                             activeColor: const Color(0xFF795548),
                           ),
@@ -818,7 +827,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                     ? Padding(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                         child: Text('Sin productos en esta categoría',
-                            style: GoogleFonts.inter(color: _kMuted, fontSize: 13)),
+                            style: GoogleFonts.inter(
+                                color: _kMuted, fontSize: 13)),
                       )
                     : Column(
                         children: [
@@ -828,8 +838,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                             physics: const NeverScrollableScrollPhysics(),
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             itemCount: products.length,
-                            separatorBuilder: (_, __) =>
-                                const Divider(height: 1, color: _kBorder, indent: 70),
+                            separatorBuilder: (_, __) => const Divider(
+                                height: 1, color: _kBorder, indent: 70),
                             itemBuilder: (_, i) =>
                                 _buildProductItem(products[i]),
                           ),
@@ -861,11 +871,16 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                 width: 50,
                 height: 50,
                 child: product.coverImage.isNotEmpty
-                    ? Image.network(product.coverImage, fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            Container(color: _kBorder, child: const Icon(Icons.image_not_supported, size: 20, color: _kMuted)))
-                    : Container(color: _kBorder,
-                        child: const Icon(Icons.image_not_supported, size: 20, color: _kMuted)),
+                    ? Image.network(product.coverImage,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                            color: _kBorder,
+                            child: const Icon(Icons.image_not_supported,
+                                size: 20, color: _kMuted)))
+                    : Container(
+                        color: _kBorder,
+                        child: const Icon(Icons.image_not_supported,
+                            size: 20, color: _kMuted)),
               ),
             ),
             const SizedBox(width: 10),
@@ -876,7 +891,9 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                 children: [
                   Text(product.name,
                       style: GoogleFonts.interTight(
-                          fontSize: 13, fontWeight: FontWeight.w700, color: _kText)),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: _kText)),
                   const SizedBox(height: 6),
                   Row(
                     children: [
@@ -884,8 +901,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                         child: TextField(
                           controller: _model.editingPriceController,
                           focusNode: _model.editingPriceFocusNode,
-                          keyboardType:
-                              const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                           autofocus: true,
                           style: GoogleFonts.inter(fontSize: 14, color: _kText),
                           decoration: InputDecoration(
@@ -912,7 +929,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                           decoration: BoxDecoration(
                               color: _kGreen,
                               borderRadius: BorderRadius.circular(8)),
-                          child: const Icon(Icons.check, color: Colors.white, size: 18),
+                          child: const Icon(Icons.check,
+                              color: Colors.white, size: 18),
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -924,7 +942,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                           decoration: BoxDecoration(
                               color: _kBorder,
                               borderRadius: BorderRadius.circular(8)),
-                          child: const Icon(Icons.close, color: _kMuted, size: 18),
+                          child:
+                              const Icon(Icons.close, color: _kMuted, size: 18),
                         ),
                       ),
                     ],
@@ -949,12 +968,16 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
               width: 50,
               height: 50,
               child: product.coverImage.isNotEmpty
-                  ? Image.network(product.coverImage, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          Container(color: _kBorder,
-                              child: const Icon(Icons.image_not_supported, size: 20, color: _kMuted)))
-                  : Container(color: _kBorder,
-                      child: const Icon(Icons.image_not_supported, size: 20, color: _kMuted)),
+                  ? Image.network(product.coverImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                          color: _kBorder,
+                          child: const Icon(Icons.image_not_supported,
+                              size: 20, color: _kMuted)))
+                  : Container(
+                      color: _kBorder,
+                      child: const Icon(Icons.image_not_supported,
+                          size: 20, color: _kMuted)),
             ),
           ),
           const SizedBox(width: 10),
@@ -979,14 +1002,15 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
                       onTap: () {
                         _model.editingPriceController!.text =
                             product.price.toStringAsFixed(2);
-                        safeSetState(
-                            () => _model.editingProductId = product.reference.id);
+                        safeSetState(() =>
+                            _model.editingProductId = product.reference.id);
                         Future.delayed(const Duration(milliseconds: 80), () {
                           _model.editingPriceFocusNode?.requestFocus();
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: _kGreenLight,
                           borderRadius: BorderRadius.circular(6),
@@ -1066,7 +1090,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
 
           // Delete
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: _kRed, size: 20),
+            icon: const Icon(Icons.delete_outline_rounded,
+                color: _kRed, size: 20),
             tooltip: 'Eliminar',
             onPressed: () => _deleteProduct(product),
             padding: EdgeInsets.zero,
@@ -1117,7 +1142,8 @@ class _AdmincreateproductWidgetState extends State<AdmincreateproductWidget> {
         errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(color: _kRed)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),
     );
   }

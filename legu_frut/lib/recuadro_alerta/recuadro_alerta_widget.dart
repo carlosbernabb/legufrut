@@ -1,4 +1,5 @@
 import '/backend/backend.dart';
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +36,7 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => RecuadroAlertaModel());
+    actions.enforceRole(context);
     _model.titulotextTextController ??= TextEditingController();
     _model.titulotextFocusNode ??= FocusNode();
     _model.description1TextController ??= TextEditingController();
@@ -78,8 +80,8 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
           ),
           backgroundColor: _kGreen,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -134,10 +136,8 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
               backgroundColor: _kDarkGreen,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded,
-                    color: Colors.white),
-                onPressed: () =>
-                    context.pushNamed(AdminHubWidget.routeName),
+                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                onPressed: () => context.pushNamed(AdminHubWidget.routeName),
               ),
               title: Text(
                 'Alerta Principal',
@@ -296,8 +296,7 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white),
+                                  strokeWidth: 2, color: Colors.white),
                             )
                           else
                             const Icon(Icons.save_rounded,
@@ -402,8 +401,8 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
                 if (desc2.isNotEmpty)
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
                       color: _kGreenLight,
                       borderRadius: BorderRadius.circular(8),
@@ -422,8 +421,7 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
                 if (desc1.isEmpty && desc2.isEmpty)
                   Text(
                     'El contenido aparecerá aquí...',
-                    style:
-                        GoogleFonts.inter(color: _kBorder, fontSize: 13),
+                    style: GoogleFonts.inter(color: _kBorder, fontSize: 13),
                   ),
               ],
             ),
@@ -496,8 +494,7 @@ class _RecuadroAlertaWidgetState extends State<RecuadroAlertaWidget> {
           labelText: label,
           labelStyle: GoogleFonts.inter(color: _kMuted, fontSize: 13),
           hintText: hint,
-          hintStyle:
-              GoogleFonts.inter(color: _kBorder, fontSize: 13),
+          hintStyle: GoogleFonts.inter(color: _kBorder, fontSize: 13),
           prefixIcon: Padding(
             padding: const EdgeInsets.only(left: 12, right: 8),
             child: Icon(icon, color: _kGreen, size: 20),

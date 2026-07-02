@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/backend/schema/products_record.dart';
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'recetas_admin_model.dart';
@@ -26,16 +27,28 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
   static const _kRed = Color(0xFFEF5350);
 
   static const _colorPalette = [
-    '4CAF50', '8BC34A', '2E7D32', 'FF7043',
-    'E91E63', '009688', '00897B', 'FF8A65',
-    '3949AB', 'E65100', '795548', '7B1FA2',
+    '4CAF50',
+    '8BC34A',
+    '2E7D32',
+    'FF7043',
+    'E91E63',
+    '009688',
+    '00897B',
+    'FF8A65',
+    '3949AB',
+    'E65100',
+    '795548',
+    '7B1FA2',
   ];
 
   // Recetas iniciales para sembrar si Firestore está vacío
   static final _initialRecipes = [
     {
-      'name': 'Guacamole Clásico', 'emoji': '🥑', 'colorHex': '4CAF50',
-      'servings': 4, 'timeMin': 15,
+      'name': 'Guacamole Clásico',
+      'emoji': '🥑',
+      'colorHex': '4CAF50',
+      'servings': 4,
+      'timeMin': 15,
       'ingredients': [
         {'name': 'Aguacate', 'qty': 0.6, 'unit': 'kg'},
         {'name': 'Lima', 'qty': 0.2, 'unit': 'kg'},
@@ -45,8 +58,11 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
       ],
     },
     {
-      'name': 'Ensalada Fresca', 'emoji': '🥗', 'colorHex': '8BC34A',
-      'servings': 2, 'timeMin': 10,
+      'name': 'Ensalada Fresca',
+      'emoji': '🥗',
+      'colorHex': '8BC34A',
+      'servings': 2,
+      'timeMin': 10,
       'ingredients': [
         {'name': 'Espinaca', 'qty': 0.15, 'unit': 'kg'},
         {'name': 'Uva Verde', 'qty': 0.2, 'unit': 'kg'},
@@ -56,8 +72,11 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
       ],
     },
     {
-      'name': 'Caldo de Verduras', 'emoji': '🍲', 'colorHex': 'FF7043',
-      'servings': 4, 'timeMin': 30,
+      'name': 'Caldo de Verduras',
+      'emoji': '🍲',
+      'colorHex': 'FF7043',
+      'servings': 4,
+      'timeMin': 30,
       'ingredients': [
         {'name': 'Ejote', 'qty': 0.25, 'unit': 'kg'},
         {'name': 'Chayote', 'qty': 0.4, 'unit': 'kg'},
@@ -66,8 +85,11 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
       ],
     },
     {
-      'name': 'Agua de Frutas', 'emoji': '🍹', 'colorHex': 'E91E63',
-      'servings': 6, 'timeMin': 10,
+      'name': 'Agua de Frutas',
+      'emoji': '🍹',
+      'colorHex': 'E91E63',
+      'servings': 6,
+      'timeMin': 10,
       'ingredients': [
         {'name': 'Sandía', 'qty': 2.0, 'unit': 'kg'},
         {'name': 'Lima', 'qty': 0.25, 'unit': 'kg'},
@@ -76,8 +98,11 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
       ],
     },
     {
-      'name': 'Smoothie Verde', 'emoji': '🥤', 'colorHex': '009688',
-      'servings': 2, 'timeMin': 5,
+      'name': 'Smoothie Verde',
+      'emoji': '🥤',
+      'colorHex': '009688',
+      'servings': 2,
+      'timeMin': 5,
       'ingredients': [
         {'name': 'Espinaca', 'qty': 0.15, 'unit': 'kg'},
         {'name': 'Manzana Golden', 'qty': 0.4, 'unit': 'kg'},
@@ -86,8 +111,11 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
       ],
     },
     {
-      'name': 'Ensalada de Frutas', 'emoji': '🍓', 'colorHex': 'E91E63',
-      'servings': 4, 'timeMin': 10,
+      'name': 'Ensalada de Frutas',
+      'emoji': '🍓',
+      'colorHex': 'E91E63',
+      'servings': 4,
+      'timeMin': 10,
       'ingredients': [
         {'name': 'Fresas', 'qty': 0.3, 'unit': 'kg'},
         {'name': 'Manzana Golden', 'qty': 0.3, 'unit': 'kg'},
@@ -97,8 +125,11 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
       ],
     },
     {
-      'name': 'Jugo Verde Detox', 'emoji': '🌿', 'colorHex': '00897B',
-      'servings': 2, 'timeMin': 5,
+      'name': 'Jugo Verde Detox',
+      'emoji': '🌿',
+      'colorHex': '00897B',
+      'servings': 2,
+      'timeMin': 5,
       'ingredients': [
         {'name': 'Espinaca', 'qty': 0.2, 'unit': 'kg'},
         {'name': 'Pera', 'qty': 0.4, 'unit': 'kg'},
@@ -107,8 +138,11 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
       ],
     },
     {
-      'name': 'Botana Veraniega', 'emoji': '🏖️', 'colorHex': 'FF8A65',
-      'servings': 6, 'timeMin': 15,
+      'name': 'Botana Veraniega',
+      'emoji': '🏖️',
+      'colorHex': 'FF8A65',
+      'servings': 6,
+      'timeMin': 15,
       'ingredients': [
         {'name': 'Sandía', 'qty': 1.5, 'unit': 'kg'},
         {'name': 'Piña', 'qty': 0.5, 'unit': 'kg'},
@@ -124,6 +158,7 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
   @override
   void initState() {
     super.initState();
+    actions.enforceRole(context);
     _seedIfEmpty();
   }
 
@@ -146,8 +181,7 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
     }
   }
 
-  Color _parseColor(String hex) =>
-      Color(int.parse('FF$hex', radix: 16));
+  Color _parseColor(String hex) => Color(int.parse('FF$hex', radix: 16));
 
   void _showForm({DocumentSnapshot? existing}) {
     showModalBottomSheet(
@@ -202,8 +236,7 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
                   );
                 }
                 if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 final docs = snap.data?.docs ?? []
                   ..sort((a, b) {
@@ -233,13 +266,10 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
                   );
                 }
                 return ListView.separated(
-                  padding:
-                      const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                   itemCount: docs.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, i) =>
-                      _buildCard(docs[i]),
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, i) => _buildCard(docs[i]),
                 );
               },
             ),
@@ -267,8 +297,7 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
-                onTap: () =>
-                    context.pushNamed(AdminHubWidget.routeName),
+                onTap: () => context.pushNamed(AdminHubWidget.routeName),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -308,8 +337,7 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
                             )),
                         Text('Crea, edita y organiza las recetas',
                             style: GoogleFonts.inter(
-                                color: Colors.white60,
-                                fontSize: 13)),
+                                color: Colors.white60, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -357,12 +385,10 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
-                    border:
-                        Border.all(color: color.withOpacity(0.3)),
+                    border: Border.all(color: color.withOpacity(0.3)),
                   ),
                   child: Center(
-                    child: Text(emoji,
-                        style: const TextStyle(fontSize: 24)),
+                    child: Text(emoji, style: const TextStyle(fontSize: 24)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -378,8 +404,7 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
                       const SizedBox(height: 3),
                       Text(
                         '$servings pers · $timeMin min · ${ingredients.length} ingredientes',
-                        style: GoogleFonts.inter(
-                            fontSize: 12, color: _kMuted),
+                        style: GoogleFonts.inter(fontSize: 12, color: _kMuted),
                       ),
                     ],
                   ),
@@ -389,16 +414,16 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
                       color: Color(0xFF3949AB), size: 20),
                   onPressed: () => _showForm(existing: doc),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                      minWidth: 36, minHeight: 36),
+                  constraints:
+                      const BoxConstraints(minWidth: 36, minHeight: 36),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline_rounded,
                       color: _kRed, size: 20),
                   onPressed: () => _delete(doc.id, name),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                      minWidth: 36, minHeight: 36),
+                  constraints:
+                      const BoxConstraints(minWidth: 36, minHeight: 36),
                 ),
               ],
             ),
@@ -411,16 +436,13 @@ class _RecetasAdminWidgetState extends State<RecetasAdminWidget> {
                 runSpacing: 6,
                 children: ingredients.map<Widget>((ing) {
                   final n = (ing['name'] as String?) ?? '';
-                  final qty =
-                      ((ing['qty'] as num?) ?? 0).toDouble();
-                  final unit =
-                      (ing['unit'] as String?) ?? 'kg';
-                  final qtyStr = qty % 1 == 0
-                      ? qty.toInt().toString()
-                      : qty.toString();
+                  final qty = ((ing['qty'] as num?) ?? 0).toDouble();
+                  final unit = (ing['unit'] as String?) ?? 'kg';
+                  final qtyStr =
+                      qty % 1 == 0 ? qty.toInt().toString() : qty.toString();
                   return Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 9, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                     decoration: BoxDecoration(
                       color: color.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -490,7 +512,8 @@ class _IngredientRowState extends State<_IngredientRow> {
   // Misma lógica que UniversalProductCard: default 'kg', solo 'pza' si saleType lo dice explícitamente
   static String _unitFromSaleType(String saleType) {
     final t = saleType.toLowerCase();
-    final isPiece = t.contains('pieza') || t.contains('pza') || t.contains('piece');
+    final isPiece =
+        t.contains('pieza') || t.contains('pza') || t.contains('piece');
     return isPiece ? 'pza' : 'kg';
   }
 
@@ -607,8 +630,8 @@ class _IngredientRowState extends State<_IngredientRow> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide:
                             const BorderSide(color: _kGreen, width: 1.5)),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
                   ),
                 ),
               ),
@@ -638,8 +661,8 @@ class _IngredientRowState extends State<_IngredientRow> {
               // ── Unit: locked badge or editable dropdown ───
               if (isLocked)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   decoration: BoxDecoration(
                     color: _kGreen.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(8),
@@ -707,12 +730,8 @@ class _IngredientRowState extends State<_IngredientRow> {
                   return InkWell(
                     onTap: () => _selectProduct(p),
                     borderRadius: BorderRadius.vertical(
-                      top: idx == 0
-                          ? const Radius.circular(8)
-                          : Radius.zero,
-                      bottom: isLast
-                          ? const Radius.circular(8)
-                          : Radius.zero,
+                      top: idx == 0 ? const Radius.circular(8) : Radius.zero,
+                      bottom: isLast ? const Radius.circular(8) : Radius.zero,
                     ),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -721,15 +740,13 @@ class _IngredientRowState extends State<_IngredientRow> {
                         border: isLast
                             ? null
                             : const Border(
-                                bottom: BorderSide(
-                                    color: Color(0xFFF3F4F6))),
+                                bottom: BorderSide(color: Color(0xFFF3F4F6))),
                       ),
                       child: Row(
                         children: [
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(p.name,
                                     style: GoogleFonts.inter(
@@ -794,12 +811,54 @@ class _RecipeFormState extends State<_RecipeForm> {
   static const _kText = Color(0xFF1A1A1A);
 
   static const _foodEmojis = [
-    '🥑','🥗','🍲','🍹','🥤','🍓','🌿','🏖️',
-    '🍎','🍊','🍋','🍇','🍉','🍍','🥦','🥕',
-    '🌽','🫑','🥔','🧅','🧄','🍄','🫚','🍳',
-    '🥚','🧀','🥩','🍗','🌮','🥙','🫔','🍜',
-    '🥘','🫕','🥗','🍱','🍛','🍝','🫓','🥐',
-    '🍰','🧁','🍮','🍩','🍪','🎂','☕','🍵',
+    '🥑',
+    '🥗',
+    '🍲',
+    '🍹',
+    '🥤',
+    '🍓',
+    '🌿',
+    '🏖️',
+    '🍎',
+    '🍊',
+    '🍋',
+    '🍇',
+    '🍉',
+    '🍍',
+    '🥦',
+    '🥕',
+    '🌽',
+    '🫑',
+    '🥔',
+    '🧅',
+    '🧄',
+    '🍄',
+    '🫚',
+    '🍳',
+    '🥚',
+    '🧀',
+    '🥩',
+    '🍗',
+    '🌮',
+    '🥙',
+    '🫔',
+    '🍜',
+    '🥘',
+    '🫕',
+    '🥗',
+    '🍱',
+    '🍛',
+    '🍝',
+    '🫓',
+    '🥐',
+    '🍰',
+    '🧁',
+    '🍮',
+    '🍩',
+    '🍪',
+    '🎂',
+    '☕',
+    '🍵',
   ];
 
   late final TextEditingController _nameCtrl;
@@ -819,10 +878,10 @@ class _RecipeFormState extends State<_RecipeForm> {
     final d = widget.existing?.data() as Map<String, dynamic>? ?? {};
     _nameCtrl = TextEditingController(text: (d['name'] as String?) ?? '');
     _selectedEmoji = (d['emoji'] as String?) ?? '🍽️';
-    _servingsCtrl = TextEditingController(
-        text: ((d['servings'] as int?) ?? 2).toString());
-    _timeCtrl = TextEditingController(
-        text: ((d['timeMin'] as int?) ?? 10).toString());
+    _servingsCtrl =
+        TextEditingController(text: ((d['servings'] as int?) ?? 2).toString());
+    _timeCtrl =
+        TextEditingController(text: ((d['timeMin'] as int?) ?? 10).toString());
     _selectedColor = (d['colorHex'] as String?) ?? widget.colorPalette.first;
 
     final rawIng = (d['ingredients'] as List<dynamic>?) ?? [];
@@ -831,8 +890,7 @@ class _RecipeFormState extends State<_RecipeForm> {
     } else {
       for (final i in rawIng) {
         final qty = ((i['qty'] as num?) ?? 0).toDouble();
-        final qtyStr =
-            qty % 1 == 0 ? qty.toInt().toString() : qty.toString();
+        final qtyStr = qty % 1 == 0 ? qty.toInt().toString() : qty.toString();
         _ings.add(_IngData(
           name: (i['name'] as String?) ?? '',
           qty: qtyStr,
@@ -844,8 +902,7 @@ class _RecipeFormState extends State<_RecipeForm> {
   }
 
   Future<void> _loadProducts() async {
-    final snap =
-        await FirebaseFirestore.instance.collection('products').get();
+    final snap = await FirebaseFirestore.instance.collection('products').get();
     if (!mounted) return;
     final products =
         snap.docs.map((d) => ProductsRecord.fromSnapshot(d)).toList();
@@ -984,9 +1041,8 @@ class _RecipeFormState extends State<_RecipeForm> {
                               height: 48,
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                    color: _showEmojiPicker
-                                        ? _kGreen
-                                        : _kBorder,
+                                    color:
+                                        _showEmojiPicker ? _kGreen : _kBorder,
                                     width: _showEmojiPicker ? 1.5 : 1),
                                 borderRadius: BorderRadius.circular(10),
                                 color: const Color(0xFFF9FAFB),
@@ -1013,8 +1069,7 @@ class _RecipeFormState extends State<_RecipeForm> {
                             TextField(
                               controller: _nameCtrl,
                               style: GoogleFonts.inter(fontSize: 14),
-                              decoration:
-                                  _inputDec('Ej: Guacamole Clásico'),
+                              decoration: _inputDec('Ej: Guacamole Clásico'),
                             ),
                           ],
                         ),
@@ -1055,8 +1110,7 @@ class _RecipeFormState extends State<_RecipeForm> {
                                   borderRadius: BorderRadius.circular(6)),
                               child: Center(
                                   child: Text(e,
-                                      style:
-                                          const TextStyle(fontSize: 20))),
+                                      style: const TextStyle(fontSize: 20))),
                             ),
                           );
                         },
@@ -1086,8 +1140,7 @@ class _RecipeFormState extends State<_RecipeForm> {
                             color: _parseColor(hex),
                             shape: BoxShape.circle,
                             border: sel
-                                ? Border.all(
-                                    color: Colors.black87, width: 2.5)
+                                ? Border.all(color: Colors.black87, width: 2.5)
                                 : Border.all(color: Colors.transparent),
                           ),
                           child: sel
@@ -1156,13 +1209,12 @@ class _RecipeFormState extends State<_RecipeForm> {
                               color: _kText)),
                       const Spacer(),
                       TextButton.icon(
-                        onPressed: () =>
-                            setState(() => _ings.add(_IngData())),
+                        onPressed: () => setState(() => _ings.add(_IngData())),
                         icon: const Icon(Icons.add_rounded,
                             size: 16, color: _kGreen),
                         label: Text('Agregar',
-                            style:
-                                GoogleFonts.inter(fontSize: 13, color: _kGreen)),
+                            style: GoogleFonts.inter(
+                                fontSize: 13, color: _kGreen)),
                         style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4)),
@@ -1173,8 +1225,8 @@ class _RecipeFormState extends State<_RecipeForm> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text('Cargando productos...',
-                          style: GoogleFonts.inter(
-                              fontSize: 12, color: _kMuted)),
+                          style:
+                              GoogleFonts.inter(fontSize: 12, color: _kMuted)),
                     ),
                   const SizedBox(height: 4),
 
@@ -1184,8 +1236,7 @@ class _RecipeFormState extends State<_RecipeForm> {
                       key: ObjectKey(_ings[idx]),
                       ing: _ings[idx],
                       products: _allProducts,
-                      onUnitChanged: (u) =>
-                          setState(() => _ings[idx].unit = u),
+                      onUnitChanged: (u) => setState(() => _ings[idx].unit = u),
                       onRemove: () => setState(() {
                         _ings[idx].dispose();
                         _ings.removeAt(idx);
@@ -1200,8 +1251,7 @@ class _RecipeFormState extends State<_RecipeForm> {
                       onPressed: _saving ? null : _save,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _kGreen,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                         elevation: 0,

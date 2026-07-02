@@ -66,6 +66,41 @@ class UsersRecord extends FirestoreRecord {
   LatLng? get driverLatLng => _driverLatLng;
   bool hasDriverLatLng() => _driverLatLng != null;
 
+  // "addrStreet" field. (Dirección guardada del cliente para reordenar)
+  String? _addrStreet;
+  String get addrStreet => _addrStreet ?? '';
+  bool hasAddrStreet() => _addrStreet != null;
+
+  // "addrNumber" field.
+  String? _addrNumber;
+  String get addrNumber => _addrNumber ?? '';
+  bool hasAddrNumber() => _addrNumber != null;
+
+  // "addrPostalCode" field.
+  String? _addrPostalCode;
+  String get addrPostalCode => _addrPostalCode ?? '';
+  bool hasAddrPostalCode() => _addrPostalCode != null;
+
+  // "addrNeighborhood" field.
+  String? _addrNeighborhood;
+  String get addrNeighborhood => _addrNeighborhood ?? '';
+  bool hasAddrNeighborhood() => _addrNeighborhood != null;
+
+  // "addrReference" field.
+  String? _addrReference;
+  String get addrReference => _addrReference ?? '';
+  bool hasAddrReference() => _addrReference != null;
+
+  // "addrLocation" field.
+  LatLng? _addrLocation;
+  LatLng? get addrLocation => _addrLocation;
+  bool hasAddrLocation() => _addrLocation != null;
+
+  // "preferredPayment" field. ('Efectivo' | 'Tarjeta')
+  String? _preferredPayment;
+  String get preferredPayment => _preferredPayment ?? '';
+  bool hasPreferredPayment() => _preferredPayment != null;
+
   void _initializeFields() {
     _email = snapshotData['email'] as String?;
     _displayName = snapshotData['display_name'] as String?;
@@ -77,6 +112,13 @@ class UsersRecord extends FirestoreRecord {
     _isDriver = snapshotData['isDriver'] as bool?;
     _driverName = snapshotData['driverName'] as String?;
     _driverLatLng = snapshotData['driverLatLng'] as LatLng?;
+    _addrStreet = snapshotData['addrStreet'] as String?;
+    _addrNumber = snapshotData['addrNumber'] as String?;
+    _addrPostalCode = snapshotData['addrPostalCode'] as String?;
+    _addrNeighborhood = snapshotData['addrNeighborhood'] as String?;
+    _addrReference = snapshotData['addrReference'] as String?;
+    _addrLocation = snapshotData['addrLocation'] as LatLng?;
+    _preferredPayment = snapshotData['preferredPayment'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -123,6 +165,13 @@ Map<String, dynamic> createUsersRecordData({
   bool? isDriver,
   String? driverName,
   LatLng? driverLatLng,
+  String? addrStreet,
+  String? addrNumber,
+  String? addrPostalCode,
+  String? addrNeighborhood,
+  String? addrReference,
+  LatLng? addrLocation,
+  String? preferredPayment,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -136,6 +185,13 @@ Map<String, dynamic> createUsersRecordData({
       'isDriver': isDriver,
       'driverName': driverName,
       'driverLatLng': driverLatLng,
+      'addrStreet': addrStreet,
+      'addrNumber': addrNumber,
+      'addrPostalCode': addrPostalCode,
+      'addrNeighborhood': addrNeighborhood,
+      'addrReference': addrReference,
+      'addrLocation': addrLocation,
+      'preferredPayment': preferredPayment,
     }.withoutNulls,
   );
 

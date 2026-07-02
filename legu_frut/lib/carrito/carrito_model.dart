@@ -26,6 +26,14 @@ class CarritoModel extends FlutterFlowModel<CarritoWidget> {
 
   LatLng? orderLocation;
 
+  // Envío calculado por distancia (km de manejo desde la central x precio/km).
+  bool feeCalculated = false;
+  double computedShippingFee = 0.0;
+  double computedKm = 0.0;
+
+  // Método de pago preferido del cliente (precargado de su perfil).
+  String preferredPayment = 'Efectivo';
+
   ///  State fields for stateful widgets in this page.
 
   final formKey = GlobalKey<FormState>();

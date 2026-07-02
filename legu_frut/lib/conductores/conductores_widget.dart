@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -48,7 +49,11 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
   // Subscriptions
   StreamSubscription? _configSub;
   StreamSubscription? _ordersSub;
-  final Map<int, StreamSubscription?> _locationSubs = {1: null, 2: null, 3: null};
+  final Map<int, StreamSubscription?> _locationSubs = {
+    1: null,
+    2: null,
+    3: null
+  };
 
   // Edit state
   int? _editingDriver;
@@ -60,6 +65,7 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => ConductoresModel());
+    actions.enforceRole(context);
     _subscribeConfig();
     _subscribeOrders();
   }
@@ -72,8 +78,9 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
         .listen((snap) {
       if (snap.docs.isEmpty) {
         safeSetState(() {
-          _appConfigRef =
-              FirebaseFirestore.instance.collection('app_config').doc('default');
+          _appConfigRef = FirebaseFirestore.instance
+              .collection('app_config')
+              .doc('default');
         });
         return;
       }
@@ -306,8 +313,7 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
                     decoration: BoxDecoration(
                       color: const Color(0xFFE8F5E9),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                          color: _kGreen.withOpacity(0.3)),
+                      border: Border.all(color: _kGreen.withOpacity(0.3)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,9 +325,7 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
                           child: Text(
                             'Para asignar un conductor, ingresa el correo con el que se registró en la app. El conductor verá automáticamente su panel al iniciar sesión.',
                             style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: _kGreen,
-                                height: 1.5),
+                                fontSize: 12, color: _kGreen, height: 1.5),
                           ),
                         ),
                       ],
@@ -530,7 +534,9 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
-                        hasDriver ? Icons.edit_rounded : Icons.person_add_rounded,
+                        hasDriver
+                            ? Icons.edit_rounded
+                            : Icons.person_add_rounded,
                         size: 16,
                         color: color,
                       ),
@@ -563,13 +569,11 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
                           hasDriver ? email : 'Sin conductor asignado',
                           style: GoogleFonts.inter(
                             fontSize: 14,
-                            fontWeight: hasDriver
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                            fontWeight:
+                                hasDriver ? FontWeight.w600 : FontWeight.normal,
                             color: hasDriver ? _kText : _kMuted,
-                            fontStyle: hasDriver
-                                ? FontStyle.normal
-                                : FontStyle.italic,
+                            fontStyle:
+                                hasDriver ? FontStyle.normal : FontStyle.italic,
                           ),
                         ),
                       ),
@@ -715,8 +719,7 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
                             child: Text(
                               _lookupError!,
                               style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: const Color(0xFFB91C1C)),
+                                  fontSize: 12, color: const Color(0xFFB91C1C)),
                             ),
                           ),
                         ],
@@ -730,8 +733,7 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
                         child: OutlinedButton(
                           onPressed: _saving
                               ? null
-                              : () => safeSetState(
-                                  () => _editingDriver = null),
+                              : () => safeSetState(() => _editingDriver = null),
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: _kBorder),
                             shape: RoundedRectangleBorder(
@@ -849,8 +851,7 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
     );
   }
 
-  Widget _buildStat(
-      String value, String label, IconData icon, Color color) {
+  Widget _buildStat(String value, String label, IconData icon, Color color) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
@@ -865,15 +866,13 @@ class _ConductoresWidgetState extends State<ConductoresWidget> {
             Text(
               value,
               style: GoogleFonts.interTight(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: color),
+                  fontSize: 20, fontWeight: FontWeight.w800, color: color),
             ),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                  fontSize: 10, color: _kMuted, height: 1.3),
+              style:
+                  GoogleFonts.inter(fontSize: 10, color: _kMuted, height: 1.3),
             ),
           ],
         ),

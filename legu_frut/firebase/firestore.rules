@@ -1,86 +1,73 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
-    }
-
-    function userRef() {
-      return /databases/$(database)/documents/users/$(request.auth.uid);
-    }
-
     function isAdmin() {
-      return signedIn()
-        && exists(userRef())
-        && get(userRef()).data.isadmin == true;
-    }
-
-    function isDriver() {
-      return signedIn()
-        && exists(userRef())
-        && get(userRef()).data.isDriver == true;
-    }
-
-    function ownsUserRef(data) {
-      return signedIn() && data.userRef == userRef();
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isadmin == true;
     }
 
     match /users/{document} {
-      allow create: if signedIn() && request.auth.uid == document;
-      allow read: if signedIn() && (request.auth.uid == document || isAdmin());
-      allow update: if signedIn() && (request.auth.uid == document || isAdmin());
-      allow delete: if signedIn() && (request.auth.uid == document || isAdmin());
+      allow create: if request.auth.uid == document;
+      allow read: if request.auth.uid == document || isAdmin();
+      allow write: if request.auth.uid == document || isAdmin();
+      allow delete: if request.auth.uid == document || isAdmin();
     }
 
     match /products/{document} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create: if isAdmin();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /cart/{document} {
-      allow create: if ownsUserRef(request.resource.data);
-      allow read, update, delete: if signedIn()
-        && (isAdmin() || ownsUserRef(resource.data));
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow delete: if request.auth != null;
     }
 
     match /orders/{document} {
-      allow create: if ownsUserRef(request.resource.data);
-      allow read, update: if signedIn()
-        && (isAdmin() || isDriver() || ownsUserRef(resource.data));
-      allow delete: if isAdmin();
+      allow create: if true;
+      allow read: if true;
+      allow write: if true;
+      allow delete: if true;
     }
 
     match /orders/{parent}/ordersitems/{document} {
-      allow create, read, update: if signedIn()
-        && (isAdmin() || isDriver() || ownsUserRef(get(/databases/$(database)/documents/orders/$(parent)).data));
-      allow delete: if isAdmin();
+      allow create: if true;
+      allow read: if true;
+      allow write: if true;
+      allow delete: if true;
     }
 
     match /{path=**}/ordersitems/{document} {
-      allow read: if signedIn();
+      allow read: if true;
     }
-
 
     match /app_config/{document} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create: if isAdmin();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /recipes/{document} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create: if isAdmin();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /driverLocations/{document} {
-      allow read: if isAdmin() || (signedIn() && request.auth.uid == document);
-      allow create, update, delete: if signedIn()
-        && request.auth.uid == document
-        && isDriver();
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == document);
+      allow create, update, delete: if request.auth != null
+        && request.auth.uid == document;
     }
 
     match /ff_user_push_notifications/{id} {
       allow read, update, delete: if false;
-      allow create: if signedIn() && userRef() == request.resource.data.sender;
+      allow create: if /databases/$(database)/documents/users/$(request.auth.uid) == request.resource.data.sender;
     }
   }
 }

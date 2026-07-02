@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_google_map.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'dart:async';
@@ -53,6 +54,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
   void initState() {
     super.initState();
     _model = createModel(context, () => DriverPanelModel());
+    actions.enforceRole(context, allowDriver: true);
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       await _loadDriverPoints(1);
@@ -71,7 +73,8 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
   Future<void> _initDriverSlot() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
     final slot = doc.data()?['driverSlot'] as int?;
     if (slot != null && slot > 0) {
       if (mounted) safeSetState(() => _myDriverSlot = slot);
@@ -89,7 +92,8 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
           perm == LocationPermission.deniedForever) return;
 
       await _updateLocation();
-      _locationTimer = Timer.periodic(const Duration(seconds: 30), (_) => _updateLocation());
+      _locationTimer =
+          Timer.periodic(const Duration(seconds: 30), (_) => _updateLocation());
       if (mounted) safeSetState(() => _locationActive = true);
     } catch (_) {}
   }
@@ -97,7 +101,8 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
   Future<void> _updateLocation() async {
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings:
+            const LocationSettings(accuracy: LocationAccuracy.high),
       );
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
@@ -183,14 +188,30 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
               style: GoogleFonts.inter(color: Colors.white)),
           backgroundColor: _kMuted,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
       return;
     }
-    const origin = '21.07364,-101.68435';
-    final destination =
-        '${points.last.latitude},${points.last.longitude}';
+    // Origen: el mismo punto de partida configurable que usa el cálculo de
+    // envío (Central de Abastos por defecto).
+    var origin = '21.0716592,-101.6841543';
+    try {
+      final cfg = await FirebaseFirestore.instance
+          .collection('app_config')
+          .limit(1)
+          .get();
+      if (cfg.docs.isNotEmpty) {
+        final d = cfg.docs.first.data();
+        final lat = (d['origin_lat'] as num?)?.toDouble();
+        final lng = (d['origin_lng'] as num?)?.toDouble();
+        if (lat != null && lng != null) {
+          origin = '$lat,$lng';
+        }
+      }
+    } catch (_) {}
+    final destination = '${points.last.latitude},${points.last.longitude}';
     final waypoints = points.length > 1
         ? points
             .sublist(0, points.length - 1)
@@ -210,8 +231,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
     if (order.userRef != null) {
       triggerPushNotification(
         notificationTitle: '🚚 Tu pedido va en camino',
-        notificationText:
-            'El repartidor ya salió rumbo a tu domicilio.',
+        notificationText: 'El repartidor ya salió rumbo a tu domicilio.',
         notificationSound: 'default',
         userRefs: [order.userRef!],
         initialPageName: 'Notificaciones',
@@ -230,13 +250,15 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
   }
 
   Future<void> _markDelivered(OrdersRecord order) async {
-    await order.reference.update(
-        createOrdersRecordData(driverStatusText: 'Su pedido ha llegado'));
+    await order.reference.update({
+      ...createOrdersRecordData(driverStatusText: 'Su pedido ha llegado'),
+      // Efectivo: al entregar, el repartidor cobra → queda pagado.
+      if (order.paymentMethod != 'Tarjeta') 'paymentStatus': 'Pagado',
+    });
     if (order.userRef != null) {
       triggerPushNotification(
         notificationTitle: '📍 Tu pedido llegó',
-        notificationText:
-            'El repartidor ya se encuentra en tu domicilio.',
+        notificationText: 'El repartidor ya se encuentra en tu domicilio.',
         notificationSound: 'default',
         userRefs: [order.userRef!],
         initialPageName: 'Notificaciones',
@@ -260,7 +282,10 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
     // Remove driver from the live map when leaving the panel
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null && _myDriverSlot > 0) {
-      FirebaseFirestore.instance.collection('driverLocations').doc(uid).delete();
+      FirebaseFirestore.instance
+          .collection('driverLocations')
+          .doc(uid)
+          .delete();
     }
     _model.dispose();
     super.dispose();
@@ -310,8 +335,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
               IconButton(
                 icon: const Icon(Icons.arrow_back_rounded,
                     color: Colors.white, size: 24),
-                onPressed: () =>
-                    context.pushNamed(HomePageWidget.routeName),
+                onPressed: () => context.pushNamed(HomePageWidget.routeName),
               ),
               const SizedBox(width: 2),
               Text(
@@ -338,7 +362,8 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                 Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: _locationActive
                           ? Colors.greenAccent.withOpacity(0.25)
@@ -352,7 +377,9 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                           width: 7,
                           height: 7,
                           decoration: BoxDecoration(
-                            color: _locationActive ? Colors.greenAccent : Colors.white54,
+                            color: _locationActive
+                                ? Colors.greenAccent
+                                : Colors.white54,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -362,7 +389,9 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: _locationActive ? Colors.greenAccent : Colors.white54,
+                            color: _locationActive
+                                ? Colors.greenAccent
+                                : Colors.white54,
                           ),
                         ),
                       ],
@@ -385,8 +414,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
         decoration: BoxDecoration(
           color: selected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
@@ -450,19 +478,16 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                 child: FlutterFlowGoogleMap(
                   controller: controller,
                   onCameraIdle: onIdle,
-                  initialLocation:
-                      center ?? const LatLng(21.07364, -101.68435),
+                  initialLocation: center ?? const LatLng(21.07364, -101.68435),
                   markers: [
-                    ...points.map(
-                        (p) => FlutterFlowMarker(p.serialize(), p)),
+                    ...points.map((p) => FlutterFlowMarker(p.serialize(), p)),
                     FlutterFlowMarker(
                       'warehouse',
                       const LatLng(21.07364, -101.68435),
                       () async {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content:
-                                  Text('Central de Abastos de León')),
+                              content: Text('Central de Abastos de León')),
                         );
                       },
                       BitmapDescriptor.defaultMarkerWithHue(
@@ -498,8 +523,8 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _kDarkGreen,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                   textStyle: GoogleFonts.inter(
@@ -532,8 +557,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                 final orders = snapshot.data!;
                 if (orders.isEmpty) return _buildEmptyState();
                 return Column(
-                  children:
-                      orders.map((o) => _buildOrderCard(o)).toList(),
+                  children: orders.map((o) => _buildOrderCard(o)).toList(),
                 );
               },
             ),
@@ -552,9 +576,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
           const SizedBox(height: 12),
           Text('Sin pedidos activos',
               style: GoogleFonts.inter(
-                  fontSize: 15,
-                  color: _kMuted,
-                  fontWeight: FontWeight.w500)),
+                  fontSize: 15, color: _kMuted, fontWeight: FontWeight.w500)),
           const SizedBox(height: 4),
           Text('Los pedidos asignados aparecerán aquí.',
               style: GoogleFonts.inter(fontSize: 13, color: _kMuted)),
@@ -577,8 +599,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: isDelivered ? const Color(0xFFBBDFBB) : _kBorder,
-            width: 1),
+            color: isDelivered ? const Color(0xFFBBDFBB) : _kBorder, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -632,18 +653,24 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
               ],
             ),
           ),
-          // ── Total
+          // ── Total + cómo cobra
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
-            child: Text(
-              formatNumber(order.total,
-                  formatType: FormatType.decimal,
-                  decimalType: DecimalType.periodDecimal,
-                  currency: '\$'),
-              style: GoogleFonts.interTight(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: _kGreen),
+            child: Row(
+              children: [
+                Text(
+                  formatNumber(order.total,
+                      formatType: FormatType.decimal,
+                      decimalType: DecimalType.periodDecimal,
+                      currency: '\$'),
+                  style: GoogleFonts.interTight(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: _kGreen),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: _paymentBadge(order)),
+              ],
             ),
           ),
           // ── Dirección
@@ -653,6 +680,56 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
           // ── Botón de acción
           _buildActionButton(order),
           const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  /// Indica al repartidor si debe cobrar en efectivo al entregar o si el
+  /// pedido va pagado (o por pagarse) con tarjeta.
+  Widget _paymentBadge(OrdersRecord order) {
+    final isCard = order.paymentMethod == 'Tarjeta';
+    final paid = order.paymentStatus == 'Pagado';
+    final Color color;
+    final String label;
+    final IconData icon;
+    if (!isCard) {
+      color = const Color(0xFFE65100);
+      label = 'COBRAR EN EFECTIVO';
+      icon = Icons.payments_rounded;
+    } else if (paid) {
+      color = _kGreen;
+      label = 'PAGADO CON TARJETA';
+      icon = Icons.credit_card_rounded;
+    } else {
+      color = const Color(0xFF009EE3);
+      label = 'TARJETA · VERIFICAR PAGO';
+      icon = Icons.credit_card_rounded;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.3,
+                  color: color),
+            ),
+          ),
         ],
       ),
     );
@@ -698,9 +775,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
           const SizedBox(width: 4),
           Text(label,
               style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: fg)),
+                  fontSize: 11, fontWeight: FontWeight.w600, color: fg)),
         ],
       ),
     );
@@ -734,8 +809,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
           ),
           const SizedBox(height: 7),
           _addrRow('${order.street} #${order.number}'),
-          _addrRow(
-              'Col. ${order.neighborhood}   CP ${order.postalCode}'),
+          _addrRow('Col. ${order.neighborhood}   CP ${order.postalCode}'),
           if (order.referenceNote.isNotEmpty)
             _addrRow('Ref: ${order.referenceNote}', italic: true),
         ],
@@ -764,7 +838,8 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
     return Column(
       children: [
         InkWell(
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
+          borderRadius:
+              const BorderRadius.vertical(bottom: Radius.circular(10)),
           onTap: () {
             final id = order.reference.id;
             safeSetState(() {
@@ -776,8 +851,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
             });
           },
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Row(
               children: [
                 Icon(
@@ -812,8 +886,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
           return Padding(
             padding: const EdgeInsets.all(12),
             child: Center(
-              child: CircularProgressIndicator(
-                  color: _kGreen, strokeWidth: 2),
+              child: CircularProgressIndicator(color: _kGreen, strokeWidth: 2),
             ),
           );
         }
@@ -822,8 +895,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
           return Padding(
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
             child: Text('Sin productos.',
-                style: GoogleFonts.inter(
-                    fontSize: 13, color: _kMuted)),
+                style: GoogleFonts.inter(fontSize: 13, color: _kMuted)),
           );
         }
         return Column(
@@ -881,8 +953,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                           color: _kText)),
                   const SizedBox(height: 3),
                   Text(qty,
-                      style: GoogleFonts.inter(
-                          fontSize: 12, color: _kMuted)),
+                      style: GoogleFonts.inter(fontSize: 12, color: _kMuted)),
                 ],
               ),
             ),
@@ -902,8 +973,7 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
                 if (isGramos)
                   Text(
                     '${formatNumber(item.pricePerKg, formatType: FormatType.decimal, decimalType: DecimalType.periodDecimal, currency: '\$')}/kg',
-                    style: GoogleFonts.inter(
-                        fontSize: 11, color: _kMuted),
+                    style: GoogleFonts.inter(fontSize: 11, color: _kMuted),
                   ),
               ],
             ),
@@ -952,9 +1022,8 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
-          onPressed: () => isEnCamino
-              ? _markDelivered(order)
-              : _markEnCamino(order),
+          onPressed: () =>
+              isEnCamino ? _markDelivered(order) : _markEnCamino(order),
           icon: Icon(
             isEnCamino
                 ? Icons.check_circle_outline_rounded
@@ -966,10 +1035,10 @@ class _DriverPanelWidgetState extends State<DriverPanelWidget>
             backgroundColor: isEnCamino ? _kGreen : _kBlue,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 13),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
-            textStyle: GoogleFonts.inter(
-                fontSize: 14, fontWeight: FontWeight.w600),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            textStyle:
+                GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
             elevation: 0,
           ),
         ),

@@ -41,6 +41,8 @@
 				</array>
 			</dict>
 		</array>
+		<key>GIDClientID</key>
+		<string>951790695087-1o34qeiucgpbhkd8kt165e1bkhaird77.apps.googleusercontent.com</string>
 		<key>FlutterDeepLinkingEnabled</key>
 		<true/>
 		<key>CFBundleVersion</key>

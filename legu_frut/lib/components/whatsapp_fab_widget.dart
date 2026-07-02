@@ -6,7 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class WhatsAppFabWidget extends StatelessWidget {
   const WhatsAppFabWidget({super.key});
 
-  static const _fallbackNumber = '4471110858';
+  static const _fallbackNumber = '4771118588';
 
   Future<void> _openWhatsApp(String number) async {
     final cleanNumber = number.replaceAll(RegExp(r'\D'), '');

@@ -61,6 +61,21 @@ class AppConfigRecord extends FirestoreRecord {
   String get whatsappNumber => _whatsappNumber ?? '';
   bool hasWhatsappNumber() => _whatsappNumber != null;
 
+  // "shipping_fee" field.
+  double? _shippingFee;
+  double get shippingFee => _shippingFee ?? 50.0;
+  bool hasShippingFee() => _shippingFee != null;
+
+  // "mercadopago_link" field. (Link de pago de Mercado Pago del negocio)
+  String? _mercadopagoLink;
+  String get mercadopagoLink => _mercadopagoLink ?? '';
+  bool hasMercadopagoLink() => _mercadopagoLink != null;
+
+  // "mercadopago_card" field. (Tarjeta de débito MP para transferencias)
+  String? _mercadopagoCard;
+  String get mercadopagoCard => _mercadopagoCard ?? '';
+  bool hasMercadopagoCard() => _mercadopagoCard != null;
+
   void _initializeFields() {
     _popupEnabled = snapshotData['popup_enabled'] as bool?;
     _popupTitle = snapshotData['popup_title'] as String?;
@@ -71,6 +86,9 @@ class AppConfigRecord extends FirestoreRecord {
     _driver2Email = snapshotData['driver2_email'] as String?;
     _driver3Email = snapshotData['driver3_email'] as String?;
     _whatsappNumber = snapshotData['whatsapp_number'] as String?;
+    _shippingFee = castToType<double>(snapshotData['shipping_fee']);
+    _mercadopagoLink = snapshotData['mercadopago_link'] as String?;
+    _mercadopagoCard = snapshotData['mercadopago_card'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -140,8 +158,13 @@ class AppConfigRecordDocumentEquality implements Equality<AppConfigRecord> {
   }
 
   @override
-  int hash(AppConfigRecord? e) => const ListEquality().hash(
-      [e?.popupEnabled, e?.popupTitle, e?.popupDesc1, e?.popupDesc2, e?.carnasEnabled]);
+  int hash(AppConfigRecord? e) => const ListEquality().hash([
+        e?.popupEnabled,
+        e?.popupTitle,
+        e?.popupDesc1,
+        e?.popupDesc2,
+        e?.carnasEnabled
+      ]);
 
   @override
   bool isValidKey(Object? o) => o is AppConfigRecord;
